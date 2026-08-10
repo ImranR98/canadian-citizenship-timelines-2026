@@ -1,5 +1,6 @@
 const { prompt: callLLM } = require("./llm");
 const { scrape } = require("./scrape");
+const crypto = require("crypto");
 const fs = require("fs");
 
 const MAX_RETRIES = 3;
@@ -19,6 +20,11 @@ function formatThread(node, depth) {
     text += formatThread(reply, depth + 1);
   }
   return text;
+}
+
+function hashThread(commentNode) {
+  const threadText = formatThread(commentNode);
+  return crypto.createHash("sha256").update(threadText).digest("hex");
 }
 
 function buildPrompt(threadText) {
@@ -241,9 +247,11 @@ if (require.main === module) {
     }
 
     const threadText = formatThread(comment);
+    const hash = hashThread(comment);
     console.log(`Comment: ${comment.id}`);
     console.log(`Reply count: ${comment.replies.length}`);
     console.log(`Thread text: ${threadText.length} chars`);
+    console.log(`Hash: ${hash}`);
     console.log(`---\n${threadText}---\n`);
 
     const totalStart = Date.now();
@@ -279,4 +287,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { extractTimeline, formatThread, findInTree, buildPrompt, validate, DATE_FIELDS, MAX_RETRIES };
+module.exports = { extractTimeline, formatThread, hashThread, findInTree, buildPrompt, validate, DATE_FIELDS, MAX_RETRIES };

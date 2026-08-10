@@ -1,7 +1,7 @@
 require("dotenv").config();
 
 const { scrape } = require("./scrape");
-const { extractTimeline } = require("./prompt");
+const { extractTimeline, hashThread } = require("./prompt");
 const fs = require("fs");
 const path = require("path");
 
@@ -10,34 +10,31 @@ const COOKIE = process.env.REDDIT_COOKIE;
 const LLM_BASE_URL = process.env.LLM_BASE_URL;
 const LLM_MODEL = process.env.LLM_MODEL;
 const LLM_API_KEY = process.env.LLM_API_KEY;
-const CONCURRENCY = parseInt(process.env.LLM_CONCURRENCY, 10) || 1;
+const CONCURRENCY = parseInt(process.env.LLM_CONCURRENCY, 10) || 20;
 const TEST_MODE = process.env.LLM_TEST_MODE === "1" || process.env.LLM_TEST_MODE === "true";
 const TEST_SAMPLE_SIZE = 5;
 
 const DATA_DIR = "data";
-const NOT_APPLICABLE_FILE = path.join(DATA_DIR, "not_applicable.json");
-const INVALID_FILE = path.join(DATA_DIR, "invalid.json");
+const STATE_FILE = path.join(DATA_DIR, "state.json");
 const RAW_OUTPUT = "comments_raw.json";
 
-function loadIdList(filePath) {
+function loadState() {
   try {
-    if (fs.existsSync(filePath)) return JSON.parse(fs.readFileSync(filePath, "utf-8"));
+    if (fs.existsSync(STATE_FILE)) return JSON.parse(fs.readFileSync(STATE_FILE, "utf-8"));
   } catch (_) {}
-  return [];
+  return {};
 }
 
-function saveIdList(filePath, ids) {
-  fs.writeFileSync(filePath, JSON.stringify(ids, null, 2));
-}
-
-function alreadyProcessed(id) {
-  return fs.existsSync(path.join(DATA_DIR, `${id}.json`));
+function saveState(state) {
+  fs.writeFileSync(STATE_FILE, JSON.stringify(state, null, 2));
 }
 
 async function main() {
   if (!fs.existsSync(DATA_DIR)) {
     fs.mkdirSync(DATA_DIR, { recursive: true });
   }
+
+  const state = loadState();
 
   console.log("Scraping Reddit comments...");
   const tree = await scrape(URL, COOKIE);
@@ -46,15 +43,17 @@ async function main() {
   fs.writeFileSync(RAW_OUTPUT, JSON.stringify(tree, null, 2));
   console.log(`Saved raw dump to ${RAW_OUTPUT}`);
 
-  const notApplicable = new Set(loadIdList(NOT_APPLICABLE_FILE));
-  const invalid = new Set(loadIdList(INVALID_FILE));
-
-  let pending = tree.filter(c => {
-    if (alreadyProcessed(c.id)) return false;
-    if (notApplicable.has(c.id)) return false;
-    if (invalid.has(c.id)) return false;
-    return true;
-  });
+  let pending = [];
+  let skipped = 0;
+  for (const comment of tree) {
+    const hash = hashThread(comment);
+    const entry = state[comment.id];
+    if (entry && entry.hash === hash) {
+      skipped++;
+    } else {
+      pending.push({ comment, hash });
+    }
+  }
 
   if (TEST_MODE && pending.length > TEST_SAMPLE_SIZE) {
     for (let i = pending.length - 1; i > 0; i--) {
@@ -64,14 +63,13 @@ async function main() {
     pending = pending.slice(0, TEST_SAMPLE_SIZE);
   }
 
-  const skipped = tree.length - pending.length;
   if (skipped > 0) {
-    console.log(`Skipping ${skipped} already-processed/known comments`);
+    console.log(`Skipping ${skipped} unchanged comments`);
   }
   if (TEST_MODE) {
     console.log(`TEST MODE: processing ${pending.length} random sample comment(s)\n`);
   } else {
-    console.log(`Processing ${pending.length} new comments (concurrency: ${CONCURRENCY})\n`);
+    console.log(`Processing ${pending.length} new/changed comments (concurrency: ${CONCURRENCY})\n`);
   }
 
   let index = 0;
@@ -83,45 +81,31 @@ async function main() {
   async function worker() {
     while (index < pending.length) {
       const i = index++;
-      const comment = pending[i];
+      const { comment, hash } = pending[i];
       const result = await extractTimeline(comment, LLM_BASE_URL, LLM_MODEL, LLM_API_KEY);
 
       switch (result.status) {
         case "processed":
+          state[result.id] = { status: "processed", hash };
           fs.writeFileSync(path.join(DATA_DIR, `${result.id}.json`), JSON.stringify(result.parsed, null, 2));
+          saveState(state);
           processed++;
           console.log(`[${result.id}] processed`);
           break;
-        case "null": {
+        case "null":
+          state[result.id] = { status: "not_applicable", hash };
+          saveState(state);
           nullCount++;
-          const ids = loadIdList(NOT_APPLICABLE_FILE);
-          if (!ids.includes(result.id)) {
-            ids.push(result.id);
-            saveIdList(NOT_APPLICABLE_FILE, ids);
-          }
           console.log(`[${result.id}] skipped (not a timeline)`);
           break;
-        }
         case "invalid":
+          state[result.id] = { status: "invalid", hash };
+          saveState(state);
           invalidCount++;
-          (() => {
-            const ids = loadIdList(INVALID_FILE);
-            if (!ids.includes(result.id)) {
-              ids.push(result.id);
-              saveIdList(INVALID_FILE, ids);
-            }
-          })();
           console.warn(`[${result.id}] INVALID after retries: ${result.reason}`);
           break;
         case "failed":
           failedCount++;
-          (() => {
-            const ids = loadIdList(INVALID_FILE);
-            if (!ids.includes(result.id)) {
-              ids.push(result.id);
-              saveIdList(INVALID_FILE, ids);
-            }
-          })();
           console.error(`[${result.id}] FAILED: ${result.reason}`);
           break;
       }

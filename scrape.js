@@ -1,3 +1,7 @@
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 function buildTree(children) {
   const comments = [];
 
@@ -21,8 +25,9 @@ function buildTree(children) {
   return comments;
 }
 
-async function scrape(threadUrl, cookie) {
-  const url = threadUrl.replace(/\/?$/, "/") + ".json";
+async function scrape(threadUrl, cookie, limit) {
+  limit = limit || 1500;
+  const base = threadUrl.replace(/\/?$/, "/") + ".json";
   const headers = {
     "User-Agent": "node:reddit-scraper:v1.0 (by /u/example)"
   };
@@ -30,18 +35,36 @@ async function scrape(threadUrl, cookie) {
     headers["Cookie"] = cookie;
   }
 
-  const res = await fetch(url, { headers });
-  if (!res.ok) {
-    throw new Error(`Reddit returned ${res.status}: ${res.statusText}`);
+  const allChildren = [];
+  let after = null;
+  let page = 0;
+
+  while (true) {
+    const params = new URLSearchParams({ limit: String(limit) });
+    if (after) params.append("after", after);
+    const url = `${base}?${params}`;
+
+    const res = await fetch(url, { headers });
+    if (!res.ok) {
+      throw new Error(`Reddit returned ${res.status}: ${res.statusText}`);
+    }
+
+    const json = await res.json();
+    const listing = json[1];
+    if (!listing || !listing.data) break;
+
+    const children = listing.data.children;
+    if (!children || children.length === 0) break;
+
+    allChildren.push(...children);
+    after = listing.data.after;
+
+    page++;
+    if (!after) break;
+    await sleep(200);
   }
 
-  const json = await res.json();
-  const commentListing = json[1];
-  if (!commentListing || !commentListing.data || !commentListing.data.children) {
-    return [];
-  }
-
-  return buildTree(commentListing.data.children);
+  return buildTree(allChildren);
 }
 
 module.exports = { scrape };
