@@ -17,29 +17,32 @@
 
     <div id="filter-card">
       <div id="filter-row">
-        <div class="filter-section">
-          <span class="filter-label">Application date</span>
-          <input type="date" id="filter-from" placeholder="From">
-          <span class="filter-range-sep">to</span>
-          <input type="date" id="filter-to" placeholder="To">
+        <div class="filter-left">
+          <div class="filter-section">
+            <span class="filter-label">Application date</span>
+            <input type="date" id="filter-from" placeholder="From">
+            <span class="filter-range-sep">to</span>
+            <input type="date" id="filter-to" placeholder="To">
+            <span class="filter-check" data-field="_missing_date">Missing date</span>
+          </div>
+
+          <div class="filter-section">
+            <span class="filter-label">Must have passed</span>
+            <span class="filter-check" data-field="aor_date">AOR</span>
+            <span class="filter-check" data-field="background_check_date">Background</span>
+            <span class="filter-check" data-field="test_completed_date">Test</span>
+            <span class="filter-check" data-field="lpp_date">LPP</span>
+            <span class="filter-check" data-field="oath_ceremony_date">Oath</span>
+          </div>
+
+          <div class="filter-section">
+            <span class="filter-label">Sort by</span>
+            <select id="sort-field"></select>
+            <button class="btn" id="sort-dir">Newest first</button>
+          </div>
         </div>
 
-        <div class="filter-section">
-          <span class="filter-label">Must have passed</span>
-          <span class="filter-check" data-field="aor_date">AOR</span>
-          <span class="filter-check" data-field="background_check_date">Background</span>
-          <span class="filter-check" data-field="test_completed_date">Test</span>
-          <span class="filter-check" data-field="lpp_date">LPP</span>
-          <span class="filter-check" data-field="oath_ceremony_date">Oath</span>
-        </div>
-
-        <div class="filter-section">
-          <span class="filter-label">Sort by</span>
-          <select id="sort-field"></select>
-          <button class="btn" id="sort-dir">Newest first</button>
-        </div>
-
-        <div class="filter-section filter-actions">
+        <div class="filter-right">
           <button class="btn" id="cols-btn">Columns</button>
           <button class="btn" id="clear-btn">Reset</button>
         </div>

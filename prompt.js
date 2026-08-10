@@ -22,6 +22,7 @@ This is a megathread where Canadian citizenship applicants post their applicatio
 - "Test Invite" means the email was sent with a test-taking window; the test is taken sometime within that window
 - "LPP" covers three checks (Language, Physical Presence, Prohibitions) that usually complete together
 - "Oath in Progress" / "Oath date" / "Oath email" / "Oath ceremony" are distinct dates users may report
+- Applicants sometimes mention their IRCC processing office (e.g. Sydney, Vancouver, Kitchener, Montreal). If mentioned, combine it with the city in the location field: "Vancouver [Sydney]"
 
 RULES:
 1. Extract dates ONLY if they are explicitly stated in the text, or can be directly inferred from an explicit relative reference ("a month ago", "last week", "2 weeks back") anchored to the comment's edit date (if edited) or post date (if not edited). For example: comment has edit date 2026-08-04 and user says "test approved a month ago" → test_completed_date is approximately 2026-07-04.
@@ -39,6 +40,7 @@ function buildUserPrompt(threadText) {
 --- EXAMPLE 1: Clean structured timeline ---
 [id: a1] by applicant1 (posted 2026-08-06) My timeline:
 Ottawa, family of 2
+Office Sydney
 . Application submitted- Feb 7 2026
 .AOR- 22 April
 . Background verification- 24 April
@@ -108,8 +110,7 @@ function example1() {
     oath_scheduled_date: null,
     oath_ceremony_date: "2026-08-06",
     application_type: null,
-    location: "Ottawa",
-    processing_office: null,
+    location: "Ottawa [Sydney]",
     notes: "Family of 2.",
     extra_steps: []
   }, null, 2);
@@ -128,7 +129,6 @@ function example2() {
     oath_ceremony_date: null,
     application_type: null,
     location: null,
-    processing_office: null,
     notes: "Test completed date inferred from 'a month ago' relative to comment date 2026-08-04. LPP still pending.",
     extra_steps: []
   }, null, 2);
@@ -147,7 +147,6 @@ function example3() {
     oath_ceremony_date: null,
     application_type: null,
     location: null,
-    processing_office: null,
     notes: "Test notification received Aug 5. Also asking about tracker access.",
     extra_steps: []
   }, null, 2);
@@ -166,7 +165,6 @@ function example4() {
     oath_ceremony_date: null,
     application_type: null,
     location: "Vancouver",
-    processing_office: null,
     notes: "Year inferred as 2026 from comment post date.",
     extra_steps: []
   }, null, 2);
@@ -185,7 +183,6 @@ function example5() {
     oath_ceremony_date: null,
     application_type: null,
     location: null,
-    processing_office: null,
     notes: "AOR date reported in reply on Aug 6.",
     extra_steps: []
   }, null, 2);

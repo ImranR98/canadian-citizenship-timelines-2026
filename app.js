@@ -10,7 +10,6 @@ const COLUMNS = [
   { key: "oath_ceremony_date",  label: "Oath Ceremony",    isDate: true },
   { key: "location",            label: "Location",         isDate: false },
   { key: "application_type",    label: "App Type",         isDate: false },
-  { key: "processing_office",   label: "Office",           isDate: false },
 ];
 
 let allItems = [];
@@ -97,11 +96,14 @@ function getFiltered() {
 
   const from = document.getElementById("filter-from").value;
   const to   = document.getElementById("filter-to").value;
+  const showMissing = checked["_missing_date"];
 
   let items = allItems.filter(item => {
+    if (!showMissing && !item.application_date) return false;
     if (from && item.application_date && item.application_date < from) return false;
     if (to   && item.application_date && item.application_date > to)   return false;
     for (const [field, on] of Object.entries(checked)) {
+      if (field === "_missing_date") continue;
       if (on && !item[field]) return false;
     }
     return true;
@@ -122,19 +124,19 @@ function getFiltered() {
 function computeAverages(items) {
   const sums = {}, counts = {};
   for (const col of COLUMNS) {
-    if (!col.isDate) continue;
+    if (!col.isDate || col.key === "application_date") continue;
     sums[col.key] = 0; counts[col.key] = 0;
   }
   for (const item of items) {
     for (const col of COLUMNS) {
-      if (!col.isDate) continue;
+      if (!col.isDate || col.key === "application_date") continue;
       const v = item._months[col.key];
       if (v !== null && v !== undefined) { sums[col.key] += v; counts[col.key]++; }
     }
   }
   const avgs = {};
   for (const col of COLUMNS) {
-    if (!col.isDate) continue;
+    if (!col.isDate || col.key === "application_date") continue;
     avgs[col.key] = counts[col.key] > 0 ? Math.round(sums[col.key] / counts[col.key] * 10) / 10 : null;
   }
   return avgs;
