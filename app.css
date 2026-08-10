@@ -65,9 +65,8 @@ main { padding: 20px 24px; }
 }
 #filter-row {
   display: flex;
-  gap: 20px;
-  align-items: center;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 12px;
 }
 .filter-section {
   display: flex;
@@ -86,7 +85,6 @@ main { padding: 20px 24px; }
   font-size: 0.82rem;
   color: var(--text-secondary);
 }
-.filter-actions { margin-left: auto; }
 
 input[type="date"] {
   padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm);
