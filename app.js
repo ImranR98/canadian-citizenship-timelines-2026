@@ -46,7 +46,7 @@ function monthsBetween(d1, d2) {
 async function fetchAll() {
   showLoading();
 
-  const stateRes = await fetch("/data/state.json");
+  const stateRes = await fetch("data/state.json");
   if (!stateRes.ok) throw new Error("state.json not found");
   const state = await stateRes.json();
 
@@ -60,7 +60,7 @@ async function fetchAll() {
   for (let i = 0; i < ids.length; i += batchSize) {
     const batch = ids.slice(i, i + batchSize);
     const results = await Promise.all(batch.map(id =>
-      fetch(`/data/${id}.json`).then(r => r.json())
+      fetch(`data/${id}.json`).then(r => r.json())
     ));
     items.push(...results);
   }
