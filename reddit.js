@@ -27,16 +27,17 @@ This is a megathread where Canadian citizenship applicants post their applicatio
 
 RULES:
 1. Extract dates ONLY if they are explicitly stated in the text, or can be directly inferred from an explicit relative reference ("a month ago", "last week", "2 weeks back") anchored to the comment's edit date (if edited) or post date (if not edited). For example: comment has edit date 2026-08-04 and user says "test approved a month ago" → test_completed_date is approximately 2026-07-04.
-2. NEVER invent or hallucinate dates. If a year is ambiguous (e.g. "April 26" without a year), infer the year from context (the comment's post date, the general era of the thread). If you infer a year, note that in the notes field.
+ 2. NEVER invent or hallucinate dates. If a step has NO mention whatsoever in the text (not even a relative or implied reference), leave it null. Do not assume, interpolate, or fabricate dates for steps that were never reported. If a year is ambiguous (e.g. "April 26" without a year), infer the year from context (the comment's post date, the general era of the thread). If you infer a year, note that in the notes field.
 3. Extracted dates must not be in the future relative to the comment's edit date (if the comment was edited) or post date (if never edited). Users often edit their original comments to add progress updates as their application advances, so dates newer than the original post date are valid as long as they are not newer than the edit date.
 4. Each comment header shows the author after "by" (e.g. "by johndoe"). Only replies from the SAME author as the top-level comment belong to that applicant's report. Replies from different authors are OTHER PEOPLE and their timeline information must NOT be merged. Extract data only from the top-level comment plus any nested replies by the same author.
 5. If the comment thread does NOT contain any citizenship application timeline/progress report (e.g. it is just a question, off-topic discussion, congratulations, or general chat), return exactly the string: null
 6. If the comment thread is a timeline but only mentions an application date and nothing else, you may still extract it — but if the comment mentions later steps (AOR, test, etc.), include those dates too. Do not output an object containing ONLY application_date when later steps are mentioned.
-7. All non-null step dates must be newer than or equal to application_date. If application_date is present, no other date may come before it.`;
+ 7. All non-null step dates must be newer than or equal to application_date. If application_date is present, no other date may come before it.
+ 8. Tracker statuses ("In Progress", "Not Started", "Completed") describe the current state of an application — they are NOT dates. If a step is listed as "In Progress" or "Not Started" without an explicit date, that step's date MUST be null. Only extract a date when one is explicitly stated.`;
 }
 
 function buildUserPrompt(threadText) {
-  return `Below are 6 examples showing how to extract timelines. Study them, then process the target thread at the end.
+  return `Below are 7 examples showing how to extract timelines. Study them, then process the target thread at the end.
 
 --- EXAMPLE 1: Clean structured timeline ---
 [id: a1] by applicant1 (posted 2026-08-06) My timeline:
@@ -92,6 +93,13 @@ ${example5()}
 
 Expected output:
 null
+
+--- EXAMPLE 7: Partial report — do not fill unmentioned gaps ---
+[id: g1] by user7 (posted 2026-08-01) Applied June 2025. Test completed December 2025.
+LPP stuck since then, no updates at all.
+
+Expected output:
+${example7()}
 
 ---
 
@@ -185,6 +193,24 @@ function example5() {
     application_type: null,
     location: null,
     notes: "AOR date reported in reply on Aug 6.",
+    extra_steps: []
+  }, null, 2);
+}
+
+function example7() {
+  return JSON.stringify({
+    application_date: "2025-06-01",
+    aor_date: null,
+    background_check_date: null,
+    test_invitation_date: null,
+    test_taken_date: null,
+    test_completed_date: "2025-12-01",
+    lpp_date: null,
+    oath_scheduled_date: null,
+    oath_ceremony_date: null,
+    application_type: null,
+    location: null,
+    notes: "Year and day inferred from month-level references. Only application and test dates were reported; no other steps were mentioned.",
     extra_steps: []
   }, null, 2);
 }
