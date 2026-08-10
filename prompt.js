@@ -11,6 +11,185 @@ const DATE_FIELDS = [
   "lpp_date", "oath_scheduled_date", "oath_ceremony_date"
 ];
 
+function buildSystemPrompt() {
+  return `You are an assistant that extracts Canadian citizenship application timelines from Reddit comment threads.
+
+BACKGROUND:
+This is a megathread where Canadian citizenship applicants post their application progress. The IRCC (Immigration, Refugees and Citizenship Canada) process consists of these steps:
+- Application submitted → AOR (Acknowledgement of Receipt) → Background check → Test invitation → Test taken → Test completed → LPP (Language, Physical Presence, Prohibitions) → Oath scheduled → Oath ceremony
+- Some applicants report optional extra steps: fingerprint requests/submissions, ghost updates (tracker activity with no status change), interviews, document resubmissions
+- "In Progress", "Completed", and "Not Started" are tracker statuses — they are NOT dates
+- "Test Invite" means the email was sent with a test-taking window; the test is taken sometime within that window
+- "LPP" covers three checks (Language, Physical Presence, Prohibitions) that usually complete together
+- "Oath in Progress" / "Oath date" / "Oath email" / "Oath ceremony" are distinct dates users may report
+
+RULES:
+1. Extract dates ONLY if they are explicitly stated in the text, or can be directly inferred from an explicit relative reference ("a month ago", "last week", "2 weeks back") anchored to the comment's post date shown in parentheses. For example: comment date is 2026-08-04 and user says "test approved a month ago" → test_completed_date is approximately 2026-07-04.
+2. NEVER invent or hallucinate dates. If a year is ambiguous (e.g. "April 26" without a year), infer the year from context (the comment's post date, the general era of the thread). If you infer a year, note that in the notes field.
+3. Extracted dates must not be in the future relative to the comment's post date.
+4. Replies are part of the same applicant's report — users often post timeline updates as replies. Read the entire thread (comment + all nested replies) as one report.
+5. If the comment thread does NOT contain any citizenship application timeline/progress report (e.g. it is just a question, off-topic discussion, congratulations, or general chat), return exactly the string: null
+6. If the comment thread is a timeline but only mentions an application date and nothing else, you may still extract it — but if the comment mentions later steps (AOR, test, etc.), include those dates too. Do not output an object containing ONLY application_date when later steps are mentioned.`;
+}
+
+function buildUserPrompt(threadText) {
+  return `Below are 6 examples showing how to extract timelines. Study them, then process the target thread at the end.
+
+--- EXAMPLE 1: Clean structured timeline ---
+[id: a1] (2026-08-06) My timeline:
+Ottawa, family of 2
+. Application submitted- Feb 7 2026
+.AOR- 22 April
+. Background verification- 24 April
+.citizenship test - 22 May
+. Test marked completed - JUNE 4
+. LPP completed - 24 june
+. Oath date 6 Aug
+
+Expected output:
+${example1()}
+
+--- EXAMPLE 2: Relative date inference ---
+[id: b1] (2026-08-04) I got my test approved a month ago now, still nothing on LPP.
+Is this normal?
+
+Expected output:
+${example2()}
+
+--- EXAMPLE 3: Mixed timeline + question ---
+[id: c1] (2026-08-06) Citizenship application filed: April 17, 2026
+AOR received: July 24, 2026
+Test notification received: August 5, 2026
+
+Question: How long does it usually take to monitor progress on the tracker?
+
+Expected output:
+${example3()}
+
+--- EXAMPLE 4: Sparse report with year disambiguation ---
+[id: d1] (2026-08-05) Single applicant, Vancouver
+
+Application submitted: May 1
+
+AOR received: Aug 5
+
+Expected output:
+${example4()}
+
+--- EXAMPLE 5: Timeline update in replies ---
+[id: e1] (2026-07-20) Applied May 4, 2026. Still waiting for AOR.
+  [id: e2] (2026-08-06) Update: got my AOR today! Aug 6
+
+Expected output:
+${example5()}
+
+--- EXAMPLE 6: Not a timeline ---
+[id: f1] (2026-08-06) Does IRCC use my residential address or mailing address to determine my processing office? Has anyone had different addresses and been able to confirm which one was used?
+
+Expected output:
+null
+
+---
+
+TARGET COMMENT THREAD (extract timeline from this one):
+${threadText}`;
+}
+
+function example1() {
+  return JSON.stringify({
+    application_date: "2026-02-07",
+    aor_date: "2026-04-22",
+    background_check_date: "2026-04-24",
+    test_invitation_date: null,
+    test_taken_date: "2026-05-22",
+    test_completed_date: "2026-06-04",
+    lpp_date: "2026-06-24",
+    oath_scheduled_date: null,
+    oath_ceremony_date: "2026-08-06",
+    application_type: null,
+    location: "Ottawa",
+    processing_office: null,
+    notes: "Family of 2.",
+    extra_steps: []
+  }, null, 2);
+}
+
+function example2() {
+  return JSON.stringify({
+    application_date: null,
+    aor_date: null,
+    background_check_date: null,
+    test_invitation_date: null,
+    test_taken_date: null,
+    test_completed_date: "2026-07-04",
+    lpp_date: null,
+    oath_scheduled_date: null,
+    oath_ceremony_date: null,
+    application_type: null,
+    location: null,
+    processing_office: null,
+    notes: "Test completed date inferred from 'a month ago' relative to comment date 2026-08-04. LPP still pending.",
+    extra_steps: []
+  }, null, 2);
+}
+
+function example3() {
+  return JSON.stringify({
+    application_date: "2026-04-17",
+    aor_date: "2026-07-24",
+    background_check_date: null,
+    test_invitation_date: "2026-08-05",
+    test_taken_date: null,
+    test_completed_date: null,
+    lpp_date: null,
+    oath_scheduled_date: null,
+    oath_ceremony_date: null,
+    application_type: null,
+    location: null,
+    processing_office: null,
+    notes: "Test notification received Aug 5. Also asking about tracker access.",
+    extra_steps: []
+  }, null, 2);
+}
+
+function example4() {
+  return JSON.stringify({
+    application_date: "2026-05-01",
+    aor_date: "2026-08-05",
+    background_check_date: null,
+    test_invitation_date: null,
+    test_taken_date: null,
+    test_completed_date: null,
+    lpp_date: null,
+    oath_scheduled_date: null,
+    oath_ceremony_date: null,
+    application_type: null,
+    location: "Vancouver",
+    processing_office: null,
+    notes: "Year inferred as 2026 from comment post date.",
+    extra_steps: []
+  }, null, 2);
+}
+
+function example5() {
+  return JSON.stringify({
+    application_date: "2026-05-04",
+    aor_date: "2026-08-06",
+    background_check_date: null,
+    test_invitation_date: null,
+    test_taken_date: null,
+    test_completed_date: null,
+    lpp_date: null,
+    oath_scheduled_date: null,
+    oath_ceremony_date: null,
+    application_type: null,
+    location: null,
+    processing_office: null,
+    notes: "AOR date reported in reply on Aug 6.",
+    extra_steps: []
+  }, null, 2);
+}
+
 function formatThread(node, depth) {
   depth = depth || 0;
   const indent = "  ".repeat(depth);
@@ -27,47 +206,9 @@ function hashThread(commentNode) {
   return crypto.createHash("sha256").update(threadText).digest("hex");
 }
 
-function buildPrompt(threadText) {
-  return `Extract the citizenship application timeline from the following Reddit comment thread.
-Return ONLY valid JSON (no markdown, no code fences, no explanation).
-
-Each comment's post date is shown in parentheses after the ID, e.g. [id: t1_abc] (2026-07-15).
-
-Fields (all dates in YYYY-MM-DD format, use null if unknown):
-{
-  "application_date": "YYYY-MM-DD or null",
-  "aor_date": "YYYY-MM-DD or null",
-  "background_check_date": "YYYY-MM-DD or null",
-  "test_invitation_date": "YYYY-MM-DD or null",
-  "test_taken_date": "YYYY-MM-DD or null",
-  "test_completed_date": "YYYY-MM-DD or null",
-  "lpp_date": "YYYY-MM-DD or null",
-  "oath_scheduled_date": "YYYY-MM-DD or null",
-  "oath_ceremony_date": "YYYY-MM-DD or null",
-  "application_type": "string or null",
-  "location": "string or null",
-  "processing_office": "string or null",
-  "notes": "string",
-  "extra_steps": [{"step": "string", "date": "YYYY-MM-DD"}]
-}
-
-IMPORTANT — relative date inference:
-If a user says something like "test approved a month ago", "got AOR last week",
-"background check completed 2 weeks back", "applied 3 months ago", etc., you MUST
-infer the approximate date based on the comment's post date shown in parentheses.
-For example, if the comment date is 2026-08-04 and they say "a month ago", the date
-should be approximately 2026-07-04. Note any inferred dates in the notes field.
-
-If this comment thread does NOT contain a citizenship application timeline/progress report
-(e.g. it's just a question, off-topic discussion, congratulations, or general chat), return exactly:
-null
-
-Comment thread:
-${threadText}`;
-}
-
-function buildRetryPrompt(originalPrompt, errors) {
-  return `Your previous response was invalid. Errors:\n${errors.join(";\n")}\n\nPlease fix these issues and return ONLY the corrected JSON:\n\n${originalPrompt}`;
+function buildRetryPrompt(errors, systemPrompt, userPrompt) {
+  const feedback = `Your previous response was invalid. Errors:\n${errors.join(";\n")}\n\nPlease fix these issues and try again.\n\n`;
+  return { system: systemPrompt, user: feedback + userPrompt };
 }
 
 function validate(extracted) {
@@ -152,18 +293,24 @@ function findInTree(tree, id) {
 async function extractTimeline(commentNode, baseUrl, model, apiKey) {
   const id = commentNode.id;
   const threadText = formatThread(commentNode);
-  const originalPrompt = buildPrompt(threadText);
+  const systemPrompt = buildSystemPrompt();
+  const userPrompt = buildUserPrompt(threadText);
   const attempts = [];
 
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-    const promptText = attempt === 0
-      ? originalPrompt
-      : buildRetryPrompt(originalPrompt, lastErrors);
+    const sp = systemPrompt;
+    let up;
+    if (attempt === 0) {
+      up = userPrompt;
+    } else {
+      const retry = buildRetryPrompt(lastErrors, systemPrompt, userPrompt);
+      up = retry.user;
+    }
 
     const t0 = Date.now();
     let response;
     try {
-      response = await callLLM(promptText, baseUrl, model, apiKey);
+      response = await callLLM(sp, up, baseUrl, model, apiKey);
     } catch (err) {
       const ms = Date.now() - t0;
       attempts.push({ attempt, error: err.message, ms });
@@ -213,9 +360,10 @@ async function extractTimeline(commentNode, baseUrl, model, apiKey) {
 if (require.main === module) {
   require("dotenv").config();
 
-  const targetId = process.argv[2];
-  if (!targetId) {
-    console.error("Usage: node prompt.js <comment_id>");
+  const args = process.argv.slice(2);
+  const showPrompt = args.includes("--show-prompt");
+  const targetId = args.find(a => !a.startsWith("--")); if (!targetId) {
+    console.error("Usage: node prompt.js [--show-prompt] <comment_id>");
     process.exit(1);
   }
 
@@ -247,11 +395,22 @@ if (require.main === module) {
     }
 
     const threadText = formatThread(comment);
+    const systemPrompt = buildSystemPrompt();
+    const userPrompt = buildUserPrompt(threadText);
+
+    if (showPrompt) {
+      console.log("========== SYSTEM MESSAGE ==========");
+      console.log(systemPrompt);
+      console.log("========== USER MESSAGE ==========");
+      console.log(userPrompt);
+      console.log("===================================\n");
+    }
+
     const hash = hashThread(comment);
     console.log(`Comment: ${comment.id}`);
     console.log(`Reply count: ${comment.replies.length}`);
-    console.log(`Thread text: ${threadText.length} chars`);
     console.log(`Hash: ${hash}`);
+    console.log(`Thread (${threadText.length} chars):`);
     console.log(`---\n${threadText}---\n`);
 
     const totalStart = Date.now();
@@ -261,7 +420,8 @@ if (require.main === module) {
     console.log(`\nStatus: ${result.status} (${totalMs}ms total)\n`);
 
     if (result.parsed) {
-      console.log(JSON.stringify(result.parsed, null, 2));
+      const output = Object.assign({}, result.parsed, { source: comment });
+      console.log(JSON.stringify(output, null, 2));
     }
     if (result.errors) {
       console.log("Validation errors:", result.errors.join("; "));
@@ -287,4 +447,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { extractTimeline, formatThread, hashThread, findInTree, buildPrompt, validate, DATE_FIELDS, MAX_RETRIES };
+module.exports = { extractTimeline, formatThread, hashThread, findInTree, buildSystemPrompt, buildUserPrompt, validate, DATE_FIELDS, MAX_RETRIES };
