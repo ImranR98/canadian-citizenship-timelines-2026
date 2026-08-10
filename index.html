@@ -43,6 +43,7 @@
         </div>
 
         <div class="filter-right">
+          <button class="btn" id="about-btn">About</button>
           <button class="btn" id="cols-btn">Columns</button>
           <button class="btn" id="clear-btn">Reset</button>
         </div>
@@ -71,5 +72,23 @@
 
   <script src="https://unpkg.com/tabulator-tables@6.3.0/dist/js/tabulator.min.js"></script>
   <script src="app.js"></script>
+
+  <div id="about-modal" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>About</h2>
+        <button id="close-modal">✕</button>
+      </div>
+      <div class="modal-body">
+        <p>This dashboard visualizes Canadian citizenship application timelines extracted from the r/ImmigrationCanada megathread. Comments are scraped from Reddit and processed by an LLM to extract structured timeline data including application dates, processing stage completion dates, and applicant metadata.</p>
+        <p>Date columns show average wait times (in months) from the application date for the currently filtered subset.</p>
+        <p style="margin-top:16px;">
+          <a href="https://www.reddit.com/r/ImmigrationCanada/comments/1q6vm0e/megathread_processing_times_citizenship_2026/" target="_blank">Reddit megathread</a>
+          &ensp;·&ensp;
+          <a href="https://github.com/ImranR98/citizen-timeline" target="_blank">Source code</a>
+        </p>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

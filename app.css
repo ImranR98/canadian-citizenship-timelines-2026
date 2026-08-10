@@ -207,6 +207,33 @@ button { cursor: pointer; font-size: 0.82rem; font-weight: 500; }
 #detail-body .notes-text { font-size: 0.85rem; line-height: 1.5; color: var(--text); background: #FFFBEB; padding: 10px 12px; border-radius: var(--radius-sm); border: 1px solid #FDE68A; }
 #detail-body .id-tag { color: var(--text-secondary); font-size: 0.78rem; margin-bottom: 2px; }
 
+/* MODAL */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 300;
+}
+.modal-overlay.hidden { display: none; }
+.modal {
+  background: var(--surface); border-radius: var(--radius);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2); max-width: 480px; width: 90%;
+  max-height: 80vh; overflow-y: auto;
+}
+.modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; border-bottom: 1px solid var(--border);
+}
+.modal-header h2 { font-size: 1.1rem; font-weight: 600; }
+.modal-header button {
+  border: none; background: none; font-size: 1.2rem; cursor: pointer;
+  color: var(--text-secondary); width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+.modal-header button:hover { background: var(--bg); color: var(--red); }
+.modal-body { padding: 20px; font-size: 0.9rem; line-height: 1.6; }
+.modal-body a { color: var(--red); text-decoration: none; }
+.modal-body a:hover { text-decoration: underline; }
+
 @media (max-width: 960px) {
   #detail-panel { position: fixed; top: 0; right: 0; width: 100%; max-width: 420px; height: 100vh; max-height: 100vh; z-index: 200; }
 }

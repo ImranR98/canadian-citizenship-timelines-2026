@@ -362,6 +362,16 @@ function init() {
   document.getElementById("cols-btn").addEventListener("click", toggleColumnsPopup);
   document.addEventListener("click", () => document.getElementById("cols-popup").classList.remove("show"));
 
+  document.getElementById("about-btn").addEventListener("click", () => {
+    document.getElementById("about-modal").classList.remove("hidden");
+  });
+  document.getElementById("close-modal").addEventListener("click", () => {
+    document.getElementById("about-modal").classList.add("hidden");
+  });
+  document.getElementById("about-modal").addEventListener("click", function(e) {
+    if (e.target === this) this.classList.add("hidden");
+  });
+
   renderColumnsPopup();
   fetchAll();
 }
