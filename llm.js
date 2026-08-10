@@ -25,7 +25,7 @@ async function prompt(systemText, userText, baseUrl, model, apiKey) {
   const json = await res.json();
   const totalMs = Date.now() - fetchStart;
   const content = json.choices[0].message.content;
-  console.error(`[llm] fetch:${fetchMs}ms total:${totalMs}ms total_chars:${systemText.length + userText.length} resp:${content.length}chars`);
+  console.error(`fetch:${fetchMs}ms total:${totalMs}ms total_chars:${systemText.length + userText.length} resp:${content.length}chars`);
 
   return content;
 }
