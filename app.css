@@ -37,6 +37,12 @@ header .badge {
   margin-left: 8px;
   font-weight: 500;
 }
+header .last-scrape {
+  font-size: 0.72rem;
+  font-weight: 400;
+  opacity: 0.7;
+  margin-left: 12px;
+}
 
 /* MAIN */
 main { padding: 20px 24px; }

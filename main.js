@@ -7,7 +7,7 @@ const { run } = require("./scrape");
 const { send: notify } = require("./notify");
 
 const PORT = parseInt(process.env.PORT, 10) || 3000;
-const INTERVAL_MS = (parseFloat(process.env.SCRAPE_INTERVAL_HOURS) || 1) * 3600000;
+const INTERVAL_MS = (parseFloat(process.env.SCRAPE_INTERVAL_HOURS) || 24) * 3600000;
 const NTFY_URL = process.env.NTFY_URL;
 const NTFY_AUTH = process.env.NTFY_AUTH;
 
@@ -54,7 +54,38 @@ server.listen(PORT, () => {
 
 let isRunning = false;
 
+function checkCookieExpiry(cookie) {
+  if (!cookie) return;
+  for (const tokenName of ["reddit_session", "token_v2"]) {
+    const idx = cookie.indexOf(tokenName + "=");
+    if (idx === -1) continue;
+    const start = idx + tokenName.length + 1;
+    const end = cookie.indexOf(";", start);
+    const value = end === -1 ? cookie.slice(start) : cookie.slice(start, end);
+    try {
+      const payload = JSON.parse(Buffer.from(value.split(".")[1], "base64url").toString());
+      if (payload.exp) {
+        const daysLeft = Math.round((payload.exp * 1000 - Date.now()) / 86400000);
+        if (daysLeft <= 7) {
+          const msg = `Reddit cookie expires in ${daysLeft} day(s). Refresh it soon.`;
+          console.warn(`!!! ${msg}`);
+          notify(NTFY_URL, msg, { title: "CCT26 cookie expiring", priority: daysLeft <= 2 ? 5 : 4, tags: "warning", auth: NTFY_AUTH });
+        }
+        return daysLeft;
+      }
+    } catch (_) {}
+  }
+}
+
+function saveLastScrape() {
+  const dir = path.join(process.cwd(), "data");
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(dir, "last_scrape.json"), JSON.stringify({ time: new Date().toISOString() }));
+}
+
 async function runSafe() {
+  checkCookieExpiry(process.env.REDDIT_COOKIE);
+
   if (isRunning) {
     console.log("Skipping scrape — previous run still in progress");
     return;
@@ -64,8 +95,10 @@ async function runSafe() {
   let summary;
   try {
     summary = await run();
+    saveLastScrape();
   } catch (err) {
     console.error("Scrape run failed:", err);
+    saveLastScrape();
     notify(NTFY_URL, `Scrape run failed: ${err.message}`, { title: "CCT26 error", priority: 4, tags: "warning", auth: NTFY_AUTH });
     isRunning = false;
     return;

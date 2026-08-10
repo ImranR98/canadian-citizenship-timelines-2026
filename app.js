@@ -95,6 +95,18 @@ async function fetchAll() {
 
   document.getElementById("loading-state").classList.add("hidden");
   initTable();
+  fetchLastScrape();
+}
+
+async function fetchLastScrape() {
+  try {
+    const r = await fetch("data/last_scrape.json");
+    if (!r.ok) return;
+    const { time } = await r.json();
+    const d = new Date(time);
+    document.getElementById("last-scrape").textContent =
+      `Last scraped ${d.toLocaleDateString()} ${d.toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}`;
+  } catch (_) {}
 }
 
 function getFiltered() {
