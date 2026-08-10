@@ -338,6 +338,7 @@ function init() {
   document.getElementById("cols-btn").addEventListener("click", toggleColumnsPopup);
   document.addEventListener("click", () => document.getElementById("cols-popup").classList.remove("show"));
 
+  renderColumnsPopup();
   fetchAll();
 }
 
