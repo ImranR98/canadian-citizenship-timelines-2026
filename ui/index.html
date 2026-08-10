@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Canadian Citizenship Timelines</title>
+  <link rel="stylesheet" href="/app.css">
+</head>
+<body>
+  <header>
+    <h1>Canadian Citizenship Timelines</h1>
+  </header>
+
+  <main>
+    <div id="controls">
+      <div id="stats-row"></div>
+      <div id="filter-row">
+        <label class="date-label">From <input type="date" id="filter-from"></label>
+        <label class="date-label">To <input type="date" id="filter-to"></label>
+        <span class="sep"></span>
+        <label class="check-label"><input type="checkbox" class="stage-filter" data-field="aor_date"> AOR</label>
+        <label class="check-label"><input type="checkbox" class="stage-filter" data-field="background_check_date"> BG</label>
+        <label class="check-label"><input type="checkbox" class="stage-filter" data-field="test_completed_date"> Test</label>
+        <label class="check-label"><input type="checkbox" class="stage-filter" data-field="lpp_date"> LPP</label>
+        <label class="check-label"><input type="checkbox" class="stage-filter" data-field="oath_ceremony_date"> Oath</label>
+        <span class="sep"></span>
+        <label>Sort <select id="sort-field"></select></label>
+        <button id="sort-dir" title="Toggle ASC/DESC">DESC ▼</button>
+        <button id="cols-btn">Columns</button>
+        <button id="clear-btn">Clear</button>
+      </div>
+      <div id="cols-popup" class="hidden"></div>
+    </div>
+
+    <div id="content">
+      <div id="table-wrap">
+        <table id="table">
+          <thead></thead>
+          <tbody></tbody>
+        </table>
+        <div id="empty-state" class="hidden">No matching timelines found.</div>
+      </div>
+      <aside id="detail-panel" class="hidden">
+        <button id="close-panel" title="Close">&times;</button>
+        <div id="detail-body"></div>
+      </aside>
+    </div>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>
