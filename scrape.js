@@ -12,7 +12,8 @@ function buildTree(children) {
     if (!data || !data.body) continue;
 
     const created = new Date(data.created_utc * 1000).toISOString().slice(0, 10);
-    const node = { id: data.id, created, body: data.body, replies: [] };
+    const edited = data.edited ? new Date(data.edited * 1000).toISOString().slice(0, 10) : null;
+    const node = { id: data.id, created, edited, author: data.author, body: data.body, replies: [] };
 
     const replies = data.replies;
     if (replies && typeof replies === "object" && replies.data && replies.data.children) {

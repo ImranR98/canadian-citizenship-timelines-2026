@@ -24,19 +24,20 @@ This is a megathread where Canadian citizenship applicants post their applicatio
 - "Oath in Progress" / "Oath date" / "Oath email" / "Oath ceremony" are distinct dates users may report
 
 RULES:
-1. Extract dates ONLY if they are explicitly stated in the text, or can be directly inferred from an explicit relative reference ("a month ago", "last week", "2 weeks back") anchored to the comment's post date shown in parentheses. For example: comment date is 2026-08-04 and user says "test approved a month ago" → test_completed_date is approximately 2026-07-04.
+1. Extract dates ONLY if they are explicitly stated in the text, or can be directly inferred from an explicit relative reference ("a month ago", "last week", "2 weeks back") anchored to the comment's edit date (if edited) or post date (if not edited). For example: comment has edit date 2026-08-04 and user says "test approved a month ago" → test_completed_date is approximately 2026-07-04.
 2. NEVER invent or hallucinate dates. If a year is ambiguous (e.g. "April 26" without a year), infer the year from context (the comment's post date, the general era of the thread). If you infer a year, note that in the notes field.
-3. Extracted dates must not be in the future relative to the comment's post date.
-4. Replies are part of the same applicant's report — users often post timeline updates as replies. Read the entire thread (comment + all nested replies) as one report.
+3. Extracted dates must not be in the future relative to the comment's edit date (if the comment was edited) or post date (if never edited). Users often edit their original comments to add progress updates as their application advances, so dates newer than the original post date are valid as long as they are not newer than the edit date.
+4. Each comment header shows the author after "by" (e.g. "by johndoe"). Only replies from the SAME author as the top-level comment belong to that applicant's report. Replies from different authors are OTHER PEOPLE and their timeline information must NOT be merged. Extract data only from the top-level comment plus any nested replies by the same author.
 5. If the comment thread does NOT contain any citizenship application timeline/progress report (e.g. it is just a question, off-topic discussion, congratulations, or general chat), return exactly the string: null
-6. If the comment thread is a timeline but only mentions an application date and nothing else, you may still extract it — but if the comment mentions later steps (AOR, test, etc.), include those dates too. Do not output an object containing ONLY application_date when later steps are mentioned.`;
+6. If the comment thread is a timeline but only mentions an application date and nothing else, you may still extract it — but if the comment mentions later steps (AOR, test, etc.), include those dates too. Do not output an object containing ONLY application_date when later steps are mentioned.
+7. All non-null step dates must be newer than or equal to application_date. If application_date is present, no other date may come before it.`;
 }
 
 function buildUserPrompt(threadText) {
   return `Below are 6 examples showing how to extract timelines. Study them, then process the target thread at the end.
 
 --- EXAMPLE 1: Clean structured timeline ---
-[id: a1] (2026-08-06) My timeline:
+[id: a1] by applicant1 (posted 2026-08-06) My timeline:
 Ottawa, family of 2
 . Application submitted- Feb 7 2026
 .AOR- 22 April
@@ -50,14 +51,14 @@ Expected output:
 ${example1()}
 
 --- EXAMPLE 2: Relative date inference ---
-[id: b1] (2026-08-04) I got my test approved a month ago now, still nothing on LPP.
+[id: b1] by applicant2 (posted 2026-08-04) I got my test approved a month ago now, still nothing on LPP.
 Is this normal?
 
 Expected output:
 ${example2()}
 
 --- EXAMPLE 3: Mixed timeline + question ---
-[id: c1] (2026-08-06) Citizenship application filed: April 17, 2026
+[id: c1] by applicant3 (posted 2026-08-06) Citizenship application filed: April 17, 2026
 AOR received: July 24, 2026
 Test notification received: August 5, 2026
 
@@ -67,7 +68,7 @@ Expected output:
 ${example3()}
 
 --- EXAMPLE 4: Sparse report with year disambiguation ---
-[id: d1] (2026-08-05) Single applicant, Vancouver
+[id: d1] by applicant4 (posted 2026-08-05) Single applicant, Vancouver
 
 Application submitted: May 1
 
@@ -76,15 +77,15 @@ AOR received: Aug 5
 Expected output:
 ${example4()}
 
---- EXAMPLE 5: Timeline update in replies ---
-[id: e1] (2026-07-20) Applied May 4, 2026. Still waiting for AOR.
-  [id: e2] (2026-08-06) Update: got my AOR today! Aug 6
+--- EXAMPLE 5: Timeline update in replies (same author) ---
+[id: e1] by applicant5 (posted 2026-07-20) Applied May 4, 2026. Still waiting for AOR.
+  [id: e2] by applicant5 (posted 2026-08-06) Update: got my AOR today! Aug 6
 
 Expected output:
 ${example5()}
 
 --- EXAMPLE 6: Not a timeline ---
-[id: f1] (2026-08-06) Does IRCC use my residential address or mailing address to determine my processing office? Has anyone had different addresses and been able to confirm which one was used?
+[id: f1] by randomuser (posted 2026-08-06) Does IRCC use my residential address or mailing address to determine my processing office? Has anyone had different addresses and been able to confirm which one was used?
 
 Expected output:
 null
@@ -193,8 +194,17 @@ function example5() {
 function formatThread(node, depth) {
   depth = depth || 0;
   const indent = "  ".repeat(depth);
-  const date = node.created ? ` (${node.created})` : "";
-  let text = `${indent}[id: ${node.id}]${date} ${node.body}\n`;
+
+  let dateStr = "";
+  if (node.created) {
+    dateStr = `posted ${node.created}`;
+    if (node.edited && node.edited !== node.created) {
+      dateStr += `, edited ${node.edited}`;
+    }
+  }
+
+  const author = node.author || "unknown";
+  let text = `${indent}[id: ${node.id}] by ${author} (${dateStr}) ${node.body}\n`;
   for (const reply of node.replies) {
     text += formatThread(reply, depth + 1);
   }
