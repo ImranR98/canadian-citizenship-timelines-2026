@@ -131,6 +131,13 @@ module.exports = { run };
 
 if (require.main === module) {
   require("dotenv").config();
+  for (const method of ["log", "warn", "error"]) {
+    const orig = console[method];
+    console[method] = (...args) => {
+      const ts = new Date().toISOString().replace("T", " ").slice(0, 19);
+      orig(`[${ts}]`, ...args);
+    };
+  }
   run().catch(err => {
     console.error(err);
     process.exit(1);

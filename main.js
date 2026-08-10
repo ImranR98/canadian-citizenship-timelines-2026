@@ -1,5 +1,13 @@
 require("dotenv").config();
 
+for (const method of ["log", "warn", "error"]) {
+  const orig = console[method];
+  console[method] = (...args) => {
+    const ts = new Date().toISOString().replace("T", " ").slice(0, 19);
+    orig(`[${ts}]`, ...args);
+  };
+}
+
 const http = require("http");
 const fs = require("fs");
 const path = require("path");

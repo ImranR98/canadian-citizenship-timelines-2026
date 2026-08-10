@@ -367,6 +367,13 @@ async function extractTimeline(commentNode, baseUrl, model, apiKey) {
 
 if (require.main === module) {
   require("dotenv").config();
+  for (const method of ["log", "warn", "error"]) {
+    const orig = console[method];
+    console[method] = (...args) => {
+      const ts = new Date().toISOString().replace("T", " ").slice(0, 19);
+      orig(`[${ts}]`, ...args);
+    };
+  }
 
   const args = process.argv.slice(2);
   const showPrompt = args.includes("--show-prompt");
