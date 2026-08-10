@@ -160,9 +160,10 @@ function updateColumnHeaders(avgs) {
   if (!table) return;
   const cols = table.getColumnDefinitions();
   for (const col of cols) {
-    if (!col.isDate) continue;
+    const def = COLUMNS.find(c => c.key === col.field);
+    if (!def || !def.isDate) continue;
     const m = avgs[col.field] !== null ? ` · ${avgs[col.field]}mo` : "";
-    table.updateColumnDefinition(col.field, { title: col.label + m });
+    table.updateColumnDefinition(col.field, { title: def.label + m });
   }
 }
 
