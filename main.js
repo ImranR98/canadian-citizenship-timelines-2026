@@ -6,7 +6,7 @@ const path = require("path");
 const { run } = require("./scrape");
 
 const PORT = parseInt(process.env.PORT, 10) || 3000;
-const INTERVAL_MS = parseInt(process.env.SCRAPE_INTERVAL_MS, 10) || 3600000;
+const INTERVAL_MS = (parseFloat(process.env.SCRAPE_INTERVAL_HOURS) || 1) * 3600000;
 
 const MIME = {
   ".html": "text/html", ".js": "application/javascript", ".json": "application/json",
@@ -33,7 +33,14 @@ const server = http.createServer((req, res) => {
   } else if (url.startsWith("/data/")) {
     serveFile(path.join(process.cwd(), url), res);
   } else {
-    serveFile(path.join(process.cwd(), url.replace(/^\//, "")), res);
+    const p = path.join(process.cwd(), url.replace(/^\//, ""));
+    if (fs.existsSync(p)) {
+      serveFile(p, res);
+    } else if (fs.existsSync(p + ".html")) {
+      serveFile(p + ".html", res);
+    } else {
+      serveFile(p, res);
+    }
   }
 });
 
