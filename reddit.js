@@ -2,6 +2,7 @@ const { prompt: callLLM } = require("./llm");
 const { scrape } = require("./fetch");
 const crypto = require("crypto");
 const fs = require("fs");
+const path = require("path");
 
 const MAX_RETRIES = 3;
 
@@ -374,7 +375,7 @@ if (require.main === module) {
     process.exit(1);
   }
 
-  const RAW_OUTPUT = "comments_raw.json";
+  const RAW_OUTPUT = "data/comments_raw.json";
   const URL = "https://www.reddit.com/r/ImmigrationCanada/comments/1q6vm0e/megathread_processing_times_citizenship_2026/";
   const COOKIE = process.env.REDDIT_COOKIE;
   const LLM_BASE_URL = process.env.LLM_BASE_URL;

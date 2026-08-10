@@ -6,7 +6,7 @@ const path = require("path");
 const URL = "https://www.reddit.com/r/ImmigrationCanada/comments/1q6vm0e/megathread_processing_times_citizenship_2026/";
 const DATA_DIR = "data";
 const STATE_FILE = path.join(DATA_DIR, "state.json");
-const RAW_OUTPUT = "comments_raw.json";
+const RAW_OUTPUT = path.join(DATA_DIR, "comments_raw.json");
 const TEST_SAMPLE_SIZE = 5;
 
 function loadState() {
