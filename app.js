@@ -99,9 +99,10 @@ function getFiltered() {
   const showMissing = checked["_missing_date"];
 
   let items = allItems.filter(item => {
-    if (!showMissing && !item.application_date) return false;
-    if (from && item.application_date && item.application_date < from) return false;
-    if (to   && item.application_date && item.application_date > to)   return false;
+    if (showMissing) return !item.application_date;
+    if (!item.application_date) return false;
+    if (from && item.application_date < from) return false;
+    if (to   && item.application_date > to)   return false;
     for (const [field, on] of Object.entries(checked)) {
       if (field === "_missing_date") continue;
       if (on && !item[field]) return false;
@@ -164,7 +165,7 @@ function updateColumnHeaders(avgs) {
   for (const col of cols) {
     const def = COLUMNS.find(c => c.key === col.field);
     if (!def || !def.isDate) continue;
-    const m = avgs[col.field] !== null ? ` · ${avgs[col.field]}mo` : "";
+    const m = avgs[col.field] != null ? ` · ${avgs[col.field]}mo` : "";
     table.updateColumnDefinition(col.field, { title: def.label + m });
   }
 }
@@ -187,7 +188,7 @@ function initTable() {
   const avgs = computeAverages(filteredItems);
 
   const cols = COLUMNS.filter(c => visibleColumns.has(c.key)).map(c => ({
-    title: c.label + (c.isDate && avgs[c.key] !== null ? ` · ${avgs[c.key]}mo` : ""),
+    title: c.label + (c.isDate && avgs[c.key] != null ? ` · ${avgs[c.key]}mo` : ""),
     field: c.key,
     sorter: "string",
     headerSort: false,
