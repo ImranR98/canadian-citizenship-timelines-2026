@@ -17,27 +17,32 @@
 
     <div id="filter-card">
       <div id="filter-row">
-        <div class="filter-group">
-          <label>From</label>
-          <input type="date" id="filter-from">
+        <div class="filter-section">
+          <span class="filter-label">Application date</span>
+          <input type="date" id="filter-from" placeholder="From">
+          <span class="filter-range-sep">to</span>
+          <input type="date" id="filter-to" placeholder="To">
         </div>
-        <div class="filter-group">
-          <label>To</label>
-          <input type="date" id="filter-to">
+
+        <div class="filter-section">
+          <span class="filter-label">Must have passed</span>
+          <span class="filter-check" data-field="aor_date">AOR</span>
+          <span class="filter-check" data-field="background_check_date">Background</span>
+          <span class="filter-check" data-field="test_completed_date">Test</span>
+          <span class="filter-check" data-field="lpp_date">LPP</span>
+          <span class="filter-check" data-field="oath_ceremony_date">Oath</span>
         </div>
-        <span class="sep"></span>
-        <span class="filter-check" data-field="aor_date">AOR</span>
-        <span class="filter-check" data-field="background_check_date">BG</span>
-        <span class="filter-check" data-field="test_completed_date">Test</span>
-        <span class="filter-check" data-field="lpp_date">LPP</span>
-        <span class="filter-check" data-field="oath_ceremony_date">Oath</span>
-        <span class="sep"></span>
-        <div class="filter-group">
+
+        <div class="filter-section">
+          <span class="filter-label">Sort by</span>
           <select id="sort-field"></select>
+          <button class="btn" id="sort-dir">Newest first</button>
         </div>
-        <button class="btn" id="sort-dir">DESC ▼</button>
-        <button class="btn" id="cols-btn">⚙ Columns</button>
-        <button class="btn" id="clear-btn">✕ Clear</button>
+
+        <div class="filter-section filter-actions">
+          <button class="btn" id="cols-btn">Columns</button>
+          <button class="btn" id="clear-btn">Reset</button>
+        </div>
       </div>
     </div>
 

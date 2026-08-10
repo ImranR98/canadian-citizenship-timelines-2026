@@ -312,7 +312,7 @@ function init() {
 
   document.getElementById("sort-dir").addEventListener("click", () => {
     sortDir = sortDir === "asc" ? "desc" : "asc";
-    document.getElementById("sort-dir").textContent = sortDir === "asc" ? "ASC ▲" : "DESC ▼";
+    document.getElementById("sort-dir").textContent = sortDir === "asc" ? "Oldest first" : "Newest first";
     refreshTable();
   });
 
@@ -322,7 +322,7 @@ function init() {
     document.getElementById("filter-to").value = "";
     sortField = "application_date";
     sortDir = "desc";
-    document.getElementById("sort-dir").textContent = "DESC ▼";
+    document.getElementById("sort-dir").textContent = "Newest first";
     document.getElementById("sort-field").value = "application_date";
     refreshTable();
   });

@@ -59,13 +59,34 @@ main { padding: 20px 24px; }
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 14px 18px;
+  padding: 16px 20px;
   box-shadow: var(--shadow-sm);
   margin-bottom: 16px;
 }
-#filter-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-.filter-group { display: flex; align-items: center; gap: 6px; }
-.filter-group label { font-size: 0.78rem; color: var(--text-secondary); white-space: nowrap; }
+#filter-row {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.filter-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.filter-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.filter-range-sep {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+.filter-actions { margin-left: auto; }
 
 input[type="date"] {
   padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm);
@@ -81,8 +102,6 @@ input[type="date"]:focus { outline: none; border-color: var(--red); box-shadow: 
 .filter-check:hover { border-color: var(--red); background: var(--red-light); }
 .filter-check.checked { border-color: var(--red); background: var(--red); color: var(--white); }
 
-.sep { width: 1px; height: 24px; background: var(--border); }
-
 select {
   padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm);
   font-size: 0.84rem; background: var(--white); cursor: pointer;
@@ -95,7 +114,6 @@ button { cursor: pointer; font-size: 0.82rem; font-weight: 500; }
   background: var(--white); transition: all 0.15s; white-space: nowrap;
 }
 .btn:hover { background: var(--bg); border-color: #ccc; }
-#cols-btn { margin-left: auto; }
 #clear-btn { color: var(--red); border-color: var(--red); background: none; }
 #clear-btn:hover { color: var(--white); background: var(--red); }
 
