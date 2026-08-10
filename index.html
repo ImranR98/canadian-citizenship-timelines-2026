@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Canadian Citizenship Timelines</title>
+  <link href="https://unpkg.com/tabulator-tables@6.3.0/dist/css/tabulator.min.css" rel="stylesheet">
   <link rel="stylesheet" href="app.css">
 </head>
 <body>
@@ -47,10 +48,7 @@
         <div id="loading-state"><div class="spinner"></div><p>Loading timelines...</p></div>
         <div id="error-state" class="hidden"></div>
         <div id="empty-state" class="hidden"><h3>No data yet</h3><p>Run <code>node main.js</code> to scrape and process the comments.</p></div>
-        <table id="table" class="hidden">
-          <thead></thead>
-          <tbody></tbody>
-        </table>
+        <div id="table"></div>
       </div>
 
       <aside id="detail-panel" class="hidden">
@@ -63,6 +61,7 @@
     </div>
   </main>
 
+  <script src="https://unpkg.com/tabulator-tables@6.3.0/dist/js/tabulator.min.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
