@@ -5,7 +5,10 @@
 #   docker run -d --name cct26 \
 #     -p 3000:3000 \
 #     -v ./data:/app/data \
-#     -v ./.env:/app/.env \
+#     -e REDDIT_COOKIE="..." \
+#     -e LLM_BASE_URL="..." \
+#     -e LLM_MODEL="..." \
+#     -e LLM_API_KEY="..." \
 #     imranrdev/cct26
 
 FROM node:22-alpine
