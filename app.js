@@ -180,18 +180,20 @@ function refreshTable() {
 }
 
 function initTable() {
+  const filteredItems = getFiltered();
+  const avgs = computeAverages(filteredItems);
+
   const cols = COLUMNS.filter(c => visibleColumns.has(c.key)).map(c => ({
-    title: c.label,
+    title: c.label + (c.isDate && avgs[c.key] !== null ? ` · ${avgs[c.key]}mo` : ""),
     field: c.key,
-    isDate: c.isDate,
     sorter: "string",
     headerSort: false,
+    isDate: c.isDate,
     formatter: c.isDate ? function(cell) { return cell.getValue() || "—"; } : "plaintext",
-    cssClass: c.isDate ? "" : "",
   }));
 
   table = new Tabulator("#table", {
-    data: [],
+    data: filteredItems,
     columns: cols,
     layout: "fitDataFill",
     height: "calc(100vh - 320px)",
@@ -199,9 +201,10 @@ function initTable() {
     selectable: 1,
     rowClick: function(e, row) { selectItem(row.getData()); },
     placeholder: "No matching timelines.",
+    initialSort: [{ column: sortField, dir: sortDir }],
   });
 
-  refreshTable();
+  updateStats(filteredItems);
 }
 
 function selectItem(item) {
