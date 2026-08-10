@@ -212,7 +212,6 @@ function initTable() {
       field: c.key,
       sorter: "string",
       headerSort: false,
-      isDate: c.isDate,
       formatter,
     };
   });
