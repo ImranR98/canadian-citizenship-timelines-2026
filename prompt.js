@@ -13,7 +13,8 @@ const DATE_FIELDS = [
 function formatThread(node, depth) {
   depth = depth || 0;
   const indent = "  ".repeat(depth);
-  let text = `${indent}[id: ${node.id}] ${node.body}\n`;
+  const date = node.created ? ` (${node.created})` : "";
+  let text = `${indent}[id: ${node.id}]${date} ${node.body}\n`;
   for (const reply of node.replies) {
     text += formatThread(reply, depth + 1);
   }
@@ -23,6 +24,8 @@ function formatThread(node, depth) {
 function buildPrompt(threadText) {
   return `Extract the citizenship application timeline from the following Reddit comment thread.
 Return ONLY valid JSON (no markdown, no code fences, no explanation).
+
+Each comment's post date is shown in parentheses after the ID, e.g. [id: t1_abc] (2026-07-15).
 
 Fields (all dates in YYYY-MM-DD format, use null if unknown):
 {
@@ -41,6 +44,13 @@ Fields (all dates in YYYY-MM-DD format, use null if unknown):
   "notes": "string",
   "extra_steps": [{"step": "string", "date": "YYYY-MM-DD"}]
 }
+
+IMPORTANT — relative date inference:
+If a user says something like "test approved a month ago", "got AOR last week",
+"background check completed 2 weeks back", "applied 3 months ago", etc., you MUST
+infer the approximate date based on the comment's post date shown in parentheses.
+For example, if the comment date is 2026-08-04 and they say "a month ago", the date
+should be approximately 2026-07-04. Note any inferred dates in the notes field.
 
 If this comment thread does NOT contain a citizenship application timeline/progress report
 (e.g. it's just a question, off-topic discussion, congratulations, or general chat), return exactly:
@@ -79,6 +89,18 @@ function validate(extracted) {
       continue;
     }
     epochDates[field] = parsed.getTime();
+  }
+
+  const hasAnyDate = DATE_FIELDS.some(field => epochDates[field] !== null);
+  const hasExtraSteps = Array.isArray(extracted.extra_steps) && extracted.extra_steps.length > 0;
+  if (!hasAnyDate && !hasExtraSteps) {
+    errors.push("No dates found — if the comment contains timeline info, dates should be extracted or inferred from relative references (e.g. 'a month ago')");
+  }
+  const onlyAppDate = epochDates.application_date !== null
+    && DATE_FIELDS.slice(1).every(field => epochDates[field] === null)
+    && !hasExtraSteps;
+  if (onlyAppDate) {
+    errors.push("Only application_date found — likely incomplete extraction");
   }
 
   let prevDate = null;

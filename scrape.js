@@ -7,7 +7,8 @@ function buildTree(children) {
     const data = child.data;
     if (!data || !data.body) continue;
 
-    const node = { id: data.name, body: data.body, replies: [] };
+    const created = new Date(data.created_utc * 1000).toISOString().slice(0, 10);
+    const node = { id: data.name, created, body: data.body, replies: [] };
 
     const replies = data.replies;
     if (replies && typeof replies === "object" && replies.data && replies.data.children) {
