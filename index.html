@@ -8,40 +8,56 @@
 </head>
 <body>
   <header>
-    <h1>Canadian Citizenship Timelines</h1>
+    <h1>Canadian Citizenship Timelines <span class="badge" id="header-count"></span></h1>
   </header>
 
   <main>
-    <div id="controls">
-      <div id="stats-row"></div>
+    <div id="stats-bar"></div>
+
+    <div id="filter-card">
       <div id="filter-row">
-        <label class="date-label">From <input type="date" id="filter-from"></label>
-        <label class="date-label">To <input type="date" id="filter-to"></label>
+        <div class="filter-group">
+          <label>From</label>
+          <input type="date" id="filter-from">
+        </div>
+        <div class="filter-group">
+          <label>To</label>
+          <input type="date" id="filter-to">
+        </div>
         <span class="sep"></span>
-        <label class="check-label"><input type="checkbox" class="stage-filter" data-field="aor_date"> AOR</label>
-        <label class="check-label"><input type="checkbox" class="stage-filter" data-field="background_check_date"> BG</label>
-        <label class="check-label"><input type="checkbox" class="stage-filter" data-field="test_completed_date"> Test</label>
-        <label class="check-label"><input type="checkbox" class="stage-filter" data-field="lpp_date"> LPP</label>
-        <label class="check-label"><input type="checkbox" class="stage-filter" data-field="oath_ceremony_date"> Oath</label>
+        <span class="filter-check" data-field="aor_date">AOR</span>
+        <span class="filter-check" data-field="background_check_date">BG</span>
+        <span class="filter-check" data-field="test_completed_date">Test</span>
+        <span class="filter-check" data-field="lpp_date">LPP</span>
+        <span class="filter-check" data-field="oath_ceremony_date">Oath</span>
         <span class="sep"></span>
-        <label>Sort <select id="sort-field"></select></label>
-        <button id="sort-dir" title="Toggle ASC/DESC">DESC ▼</button>
-        <button id="cols-btn">Columns</button>
-        <button id="clear-btn">Clear</button>
+        <div class="filter-group">
+          <select id="sort-field"></select>
+        </div>
+        <button class="btn" id="sort-dir">DESC ▼</button>
+        <button class="btn" id="cols-btn">⚙ Columns</button>
+        <button class="btn" id="clear-btn">✕ Clear</button>
       </div>
-      <div id="cols-popup" class="hidden"></div>
     </div>
+
+    <div id="cols-popup"></div>
 
     <div id="content">
       <div id="table-wrap">
-        <table id="table">
+        <div id="loading-state"><div class="spinner"></div><p>Loading timelines...</p></div>
+        <div id="error-state" class="hidden"></div>
+        <div id="empty-state" class="hidden"><h3>No data yet</h3><p>Run <code>node main.js</code> to scrape and process the comments.</p></div>
+        <table id="table" class="hidden">
           <thead></thead>
           <tbody></tbody>
         </table>
-        <div id="empty-state" class="hidden">No matching timelines found.</div>
       </div>
+
       <aside id="detail-panel" class="hidden">
-        <button id="close-panel" title="Close">&times;</button>
+        <div id="panel-header">
+          <h3 id="panel-title"></h3>
+          <button id="close-panel">✕</button>
+        </div>
         <div id="detail-body"></div>
       </aside>
     </div>
