@@ -41,9 +41,24 @@ LLM_MODEL=...               # Model name
 LLM_API_KEY=...             # API key (optional for local LLMs)
 LLM_TEST_MODE=1             # Only process 5 random comments
 # LLM_CONCURRENCY=20        # Parallel LLM requests (default: 20)
+# NTFY_URL=...               # ntfy.sh topic URL for notifications (optional)
+# NTFY_AUTH=...               # ntfy.sh auth header (optional)
 ```
 
 To get your Reddit cookie: log into Reddit in your browser, open DevTools → Application → Cookies → copy the entire cookie string.
+
+### Notifications (optional)
+
+Set `NTFY_URL` to receive push notifications via [ntfy.sh](https://ntfy.sh) for important events:
+
+| Event | Priority | When |
+|---|---|---|
+| Server started | 3 | Once on startup |
+| Scrape completed | 3 | Only when new/existing comments were processed or failures occurred |
+| Scrape failed | 4 | Reddit API or LLM API errors |
+| Server crash | 5 | Uncaught exceptions or unhandled promise rejections |
+
+Set `NTFY_AUTH` if your ntfy topic requires authentication (e.g. `Bearer tk_...`). Leave both unset to skip notifications.
 
 ### Run the scraper + LLM pipeline
 

@@ -116,6 +116,15 @@ async function run() {
   await Promise.all(workers);
 
   console.log(`\nDone! ${processed} processed, ${nullCount} not applicable, ${invalidCount} invalid, ${failedCount} failed`);
+
+  return {
+    scraped: tree.length,
+    skipped,
+    processed,
+    nullCount,
+    invalidCount,
+    failedCount,
+  };
 }
 
 module.exports = { run };
