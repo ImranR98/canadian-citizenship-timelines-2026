@@ -10,11 +10,20 @@ const COLUMNS = [
   { key: "oath_ceremony_date",  label: "Oath Ceremony",    isDate: true },
   { key: "location",            label: "Location",         isDate: false },
   { key: "application_type",    label: "App Type",         isDate: false },
+  { key: "extra_steps",         label: "Extra Steps",      isDate: false },
+  { key: "notes",               label: "Notes",            isDate: false },
 ];
+
+const DEFAULT_VISIBLE = new Set([
+  "application_date", "aor_date", "background_check_date",
+  "test_invitation_date", "test_taken_date", "test_completed_date",
+  "lpp_date", "oath_scheduled_date", "oath_ceremony_date",
+  "location", "notes",
+]);
 
 let allItems = [];
 let table;
-let visibleColumns = new Set(COLUMNS.slice(0, 10).map(c => c.key));
+let visibleColumns = new Set(DEFAULT_VISIBLE);
 let sortField = "application_date";
 let sortDir = "desc";
 let selectedId = null;
@@ -187,14 +196,26 @@ function initTable() {
   const filteredItems = getFiltered();
   const avgs = computeAverages(filteredItems);
 
-  const cols = COLUMNS.filter(c => visibleColumns.has(c.key)).map(c => ({
-    title: c.label + (c.isDate && avgs[c.key] != null ? ` · ${avgs[c.key]}mo` : ""),
-    field: c.key,
-    sorter: "string",
-    headerSort: false,
-    isDate: c.isDate,
-    formatter: c.isDate ? function(cell) { return cell.getValue() || "—"; } : "plaintext",
-  }));
+  const cols = COLUMNS.filter(c => visibleColumns.has(c.key)).map(c => {
+    let formatter = "plaintext";
+    if (c.isDate) {
+      formatter = function(cell) { return cell.getValue() || "—"; };
+    } else if (c.key === "extra_steps") {
+      formatter = function(cell) {
+        const v = cell.getValue();
+        if (!v || !v.length) return "—";
+        return v.map(s => s.step + (s.date ? " (" + s.date + ")" : "")).join(", ");
+      };
+    }
+    return {
+      title: c.label + (c.isDate && avgs[c.key] != null ? ` · ${avgs[c.key]}mo` : ""),
+      field: c.key,
+      sorter: "string",
+      headerSort: false,
+      isDate: c.isDate,
+      formatter,
+    };
+  });
 
   table = new Tabulator("#table", {
     data: filteredItems,
