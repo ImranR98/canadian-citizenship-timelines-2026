@@ -1,0 +1,46 @@
+function buildTree(children) {
+  const comments = [];
+
+  for (const child of children) {
+    if (child.kind !== "t1") continue;
+
+    const data = child.data;
+    if (!data || !data.body) continue;
+
+    const node = { id: data.name, body: data.body, replies: [] };
+
+    const replies = data.replies;
+    if (replies && typeof replies === "object" && replies.data && replies.data.children) {
+      node.replies = buildTree(replies.data.children);
+    }
+
+    comments.push(node);
+  }
+
+  return comments;
+}
+
+async function scrape(threadUrl, cookie) {
+  const url = threadUrl.replace(/\/?$/, "/") + ".json";
+  const headers = {
+    "User-Agent": "node:reddit-scraper:v1.0 (by /u/example)"
+  };
+  if (cookie) {
+    headers["Cookie"] = cookie;
+  }
+
+  const res = await fetch(url, { headers });
+  if (!res.ok) {
+    throw new Error(`Reddit returned ${res.status}: ${res.statusText}`);
+  }
+
+  const json = await res.json();
+  const commentListing = json[1];
+  if (!commentListing || !commentListing.data || !commentListing.data.children) {
+    return [];
+  }
+
+  return buildTree(commentListing.data.children);
+}
+
+module.exports = { scrape };
