@@ -1,5 +1,5 @@
 const { prompt: callLLM } = require("./llm");
-const { scrape } = require("./scrape");
+const { scrape } = require("./fetch");
 const crypto = require("crypto");
 const fs = require("fs");
 
