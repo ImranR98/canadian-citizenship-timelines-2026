@@ -24,8 +24,8 @@ Browser     →  app.js     →  Interactive table with filters, sorting, and si
 ### Install
 
 ```bash
-git clone https://github.com/ImranR98/citizen-timeline.git
-cd citizen-timeline
+git clone https://github.com/ImranR98/canadian-citizenship-timelines-2026.git
+cd canadian-citizenship-timelines-2026
 npm install
 cp .env.example .env
 ```
