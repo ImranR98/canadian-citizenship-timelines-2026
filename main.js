@@ -104,10 +104,24 @@ async function main() {
         }
         case "invalid":
           invalidCount++;
+          (() => {
+            const ids = loadIdList(INVALID_FILE);
+            if (!ids.includes(result.id)) {
+              ids.push(result.id);
+              saveIdList(INVALID_FILE, ids);
+            }
+          })();
           console.warn(`[${result.id}] INVALID after retries: ${result.reason}`);
           break;
         case "failed":
           failedCount++;
+          (() => {
+            const ids = loadIdList(INVALID_FILE);
+            if (!ids.includes(result.id)) {
+              ids.push(result.id);
+              saveIdList(INVALID_FILE, ids);
+            }
+          })();
           console.error(`[${result.id}] FAILED: ${result.reason}`);
           break;
       }
