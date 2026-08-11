@@ -119,22 +119,27 @@ function populateLocations() {
   popup.onclick = (e) => e.stopPropagation();
 
   for (const loc of locations) {
-    const label = document.createElement("label");
-    const cb = document.createElement("input");
-    cb.type = "checkbox";
-    cb.checked = selectedLocations.has(loc);
-    label.appendChild(cb);
-    label.appendChild(document.createTextNode(" " + loc));
-    cb.addEventListener("change", () => {
-      if (cb.checked) selectedLocations.add(loc);
-      else selectedLocations.delete(loc);
-      updateLocButton();
-      refreshTable();
-    });
-    popup.appendChild(label);
+    addLocCheckbox(popup, loc, loc);
   }
+  addLocCheckbox(popup, "_unknown", "Unknown");
 
   updateLocButton();
+}
+
+function addLocCheckbox(popup, key, label) {
+  const wrap = document.createElement("label");
+  const cb = document.createElement("input");
+  cb.type = "checkbox";
+  cb.checked = selectedLocations.has(key);
+  wrap.appendChild(cb);
+  wrap.appendChild(document.createTextNode(" " + label));
+  cb.addEventListener("change", () => {
+    if (cb.checked) selectedLocations.add(key);
+    else selectedLocations.delete(key);
+    updateLocButton();
+    refreshTable();
+  });
+  popup.appendChild(wrap);
 }
 
 function updateLocButton() {
@@ -142,8 +147,8 @@ function updateLocButton() {
   if (selectedLocations.size === 0) {
     btn.textContent = "All locations";
   } else if (selectedLocations.size === 1) {
-    btn.textContent = [...selectedLocations][0];
-  } else {
+    const v = [...selectedLocations][0];
+    btn.textContent = v === "_unknown" ? "Unknown" : v;  } else {
     btn.textContent = `${selectedLocations.size} locations`;
   }
 }
@@ -178,7 +183,7 @@ function getFiltered() {
       if (field === "_missing_date") continue;
       if (on && !item[field]) return false;
     }
-    if (selectedLocations.size > 0 && !selectedLocations.has(item.location)) return false;
+    if (selectedLocations.size > 0 && !(selectedLocations.has(item.location) || (selectedLocations.has("_unknown") && !item.location))) return false;
     return true;
   });
 
