@@ -76,18 +76,19 @@ function computeEstimates() {
   }
   if (known.length === 0) return result;
 
-  let cumDays = 0;
   const stepDays = {};
   for (const f of DATE_FIELDS) {
-    stepDays[f] = cumDays;
-    const avg = avgs[f];
-    if (avg !== null && avg !== undefined) cumDays += avg;
+    if (f === "application_date") {
+      stepDays[f] = 0;
+    } else {
+      const avg = avgs[f];
+      stepDays[f] = (avg !== null && avg !== undefined) ? avg : null;
+    }
   }
 
   for (const f of DATE_FIELDS) {
     if (estimatorFilled[f]) continue;
-    const avg = avgs[f];
-    if (avg === null || avg === undefined) continue;
+    if (stepDays[f] === null) continue;
 
     let prev = null, next = null;
     for (let i = DATE_FIELDS.indexOf(f) - 1; i >= 0; i--) {
@@ -100,16 +101,18 @@ function computeEstimates() {
     }
 
     let est;
-    if (prev && next) {
+    if (prev && next && stepDays[prev.field] !== null && stepDays[next.field] !== null) {
       const totalAvg = stepDays[next.field] - stepDays[prev.field];
       const gapAvg = stepDays[f] - stepDays[prev.field];
       const ratio = totalAvg > 0 ? gapAvg / totalAvg : 0;
       const actualGap = (next.date.getTime() - prev.date.getTime()) / 86400000;
       est = new Date(prev.date.getTime() + actualGap * ratio * 86400000);
-    } else if (prev) {
-      est = new Date(prev.date.getTime() + avg * 86400000);
-    } else if (next) {
-      est = new Date(next.date.getTime() - avg * 86400000);
+    } else if (prev && stepDays[prev.field] !== null) {
+      const gap = stepDays[f] - stepDays[prev.field];
+      est = new Date(prev.date.getTime() + gap * 86400000);
+    } else if (next && stepDays[next.field] !== null) {
+      const gap = stepDays[next.field] - stepDays[f];
+      est = new Date(next.date.getTime() - gap * 86400000);
     } else {
       continue;
     }
