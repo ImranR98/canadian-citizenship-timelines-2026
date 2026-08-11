@@ -43,9 +43,9 @@ function parseDate(s) {
   return m ? new Date(s + "T00:00:00Z") : null;
 }
 
-function monthsBetween(d1, d2) {
+function daysBetween(d1, d2) {
   if (!d1 || !d2) return null;
-  return Math.round(((d2.getTime() - d1.getTime()) / 86400000 / 30.44) * 10) / 10;
+  return Math.round((d2.getTime() - d1.getTime()) / 86400000);
 }
 
 async function fetchAll() {
@@ -101,7 +101,7 @@ async function fetchAll() {
     for (const col of COLUMNS) {
       if (!col.isDate) continue;
       const d = parseDate(item[col.key]);
-      item._months[col.key] = (appDate && d) ? monthsBetween(appDate, d) : null;
+      item._months[col.key] = (appDate && d) ? daysBetween(appDate, d) : null;
     }
     return item;
   });
@@ -225,11 +225,11 @@ function updateStats(filteredItems) {
   const avgs = computeAverages(filteredItems);
   const stats = [
     { label: "Total", value: filteredItems.length },
-    { label: "AOR avg", value: avgs.aor_date !== null ? `${avgs.aor_date}mo` : "—" },
-    { label: "BG avg", value: avgs.background_check_date !== null ? `${avgs.background_check_date}mo` : "—" },
-    { label: "Test avg", value: avgs.test_completed_date !== null ? `${avgs.test_completed_date}mo` : "—" },
-    { label: "LPP avg", value: avgs.lpp_date !== null ? `${avgs.lpp_date}mo` : "—" },
-    { label: "Oath avg", value: avgs.oath_ceremony_date !== null ? `${avgs.oath_ceremony_date}mo` : "—" },
+    { label: "AOR avg", value: avgs.aor_date !== null ? `${avgs.aor_date}d` : "—" },
+    { label: "BG avg", value: avgs.background_check_date !== null ? `${avgs.background_check_date}d` : "—" },
+    { label: "Test avg", value: avgs.test_completed_date !== null ? `${avgs.test_completed_date}d` : "—" },
+    { label: "LPP avg", value: avgs.lpp_date !== null ? `${avgs.lpp_date}d` : "—" },
+    { label: "Oath avg", value: avgs.oath_ceremony_date !== null ? `${avgs.oath_ceremony_date}d` : "—" },
   ];
   const bar = document.getElementById("stats-bar");
   bar.replaceChildren();
@@ -255,7 +255,7 @@ function updateColumnHeaders(avgs) {
   for (const col of cols) {
     const def = COLUMNS.find(c => c.key === col.field);
     if (!def || !def.isDate) continue;
-    const m = avgs[col.field] != null ? ` · ${avgs[col.field]}mo` : "";
+    const m = avgs[col.field] != null ? ` · ${avgs[col.field]}d` : "";
     table.updateColumnDefinition(col.field, { title: def.label + m });
   }
 }
@@ -289,7 +289,7 @@ function initTable() {
       };
     }
     return {
-      title: c.label + (c.isDate && avgs[c.key] != null ? ` · ${avgs[c.key]}mo` : ""),
+      title: c.label + (c.isDate && avgs[c.key] != null ? ` · ${avgs[c.key]}d` : ""),
       field: c.key,
       sorter: "string",
       headerSort: false,
@@ -342,7 +342,7 @@ function renderSidePanel(item) {
     td1.textContent = c.label;
     const td2 = document.createElement("td");
     let val = item[c.key] || "—";
-    if (c.isDate && item._months[c.key] !== null) val += ` · ${item._months[c.key]}mo`;
+    if (c.isDate && item._months[c.key] !== null) val += ` · ${item._months[c.key]}d`;
     td2.textContent = val;
     tr.appendChild(td1);
     tr.appendChild(td2);
