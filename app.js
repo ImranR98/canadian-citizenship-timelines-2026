@@ -125,6 +125,18 @@ function computeEstimates() {
     }
   }
 
+  let currentStep = null;
+  let hasLaterFilled = false;
+  for (const f of DATE_FIELDS) {
+    if (!estimatorFilled[f] && !currentStep) {
+      currentStep = f;
+    }
+    if (currentStep && estimatorFilled[f]) {
+      hasLaterFilled = true;
+    }
+  }
+  if (hasLaterFilled) currentStep = null;
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   let shiftMs = 0;
@@ -142,11 +154,11 @@ function computeEstimates() {
       }
     }
   }
-  return { estimates, expectations, pinned };
+  return { estimates, expectations, pinned, currentStep };
 }
 
 function applyEstimator() {
-  const { estimates, expectations, pinned } = computeEstimates();
+  const { estimates, expectations, pinned, currentStep } = computeEstimates();
   const inputs = document.querySelectorAll("#estimator-card input[type=date]");
   for (const inp of inputs) {
     const step = inp.dataset.step;
@@ -168,7 +180,7 @@ function applyEstimator() {
 
     const expDate = expectations[step];
     if (expDate && actual && step !== "application_date") {
-      if (pinned[step]) {
+      if (pinned[step] && step === currentStep) {
         inp.classList.add("pinned");
       } else if (actual > expDate) {
         inp.classList.add("late");
