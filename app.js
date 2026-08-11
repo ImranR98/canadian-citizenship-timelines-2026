@@ -26,6 +26,188 @@ let selectedId = null;
 let selectedLocations = new Set();
 let expandedNotes = false;
 let expandedExtra = false;
+let estimatorFilled = {};
+let estimatorCollapsed = false;
+
+const ESTIMATOR_KEYS = {
+  app: "application_date", aor: "aor_date", bg: "background_check_date",
+  test_inv: "test_invitation_date", test_tkn: "test_taken_date",
+  test_cmp: "test_completed_date", lpp: "lpp_date", os: "oath_scheduled_date",
+  oc: "oath_ceremony_date"
+};
+
+function parseQueryParams() {
+  const p = new URLSearchParams(window.location.search);
+  estimatorFilled = {};
+  for (const [short, key] of Object.entries(ESTIMATOR_KEYS)) {
+    const v = p.get(short);
+    if (v && /^\d{4}-\d{2}-\d{2}$/.test(v)) estimatorFilled[key] = v;
+  }
+  if (p.get("from")) document.getElementById("filter-from").value = p.get("from");
+  if (p.get("to")) document.getElementById("filter-to").value = p.get("to");
+  if (p.get("sort")) sortField = p.get("sort");
+  if (p.get("dir")) sortDir = p.get("dir") === "asc" ? "asc" : "desc";
+  if (p.get("missing") === "1") {
+    setTimeout(() => {
+      const el = document.querySelector(`.filter-check[data-field="_missing_date"]`);
+      if (el) el.classList.add("checked");
+    }, 0);
+  }
+  for (const f of ["aor_date","background_check_date","test_completed_date","lpp_date","oath_ceremony_date"]) {
+    if (p.get("filter_" + f) === "1") {
+      setTimeout(() => {
+        const el = document.querySelector(`.filter-check[data-field="${f}"]`);
+        if (el) el.classList.add("checked");
+      }, 0);
+    }
+  }
+  p.getAll("loc").forEach(loc => selectedLocations.add(loc));
+}
+
+function computeEstimates() {
+  const avgs = computeAverages(getFiltered());
+  const result = {};
+
+  const known = [];
+  for (const f of DATE_FIELDS) {
+    if (estimatorFilled[f]) known.push({ field: f, date: parseDate(estimatorFilled[f]) });
+  }
+  if (known.length === 0) return result;
+
+  let cumDays = 0;
+  const stepDays = {};
+  for (const f of DATE_FIELDS) {
+    stepDays[f] = cumDays;
+    const avg = avgs[f];
+    if (avg !== null && avg !== undefined) cumDays += avg;
+  }
+
+  for (const f of DATE_FIELDS) {
+    if (estimatorFilled[f]) continue;
+    const avg = avgs[f];
+    if (avg === null || avg === undefined) continue;
+
+    let prev = null, next = null;
+    for (let i = DATE_FIELDS.indexOf(f) - 1; i >= 0; i--) {
+      const d = estimatorFilled[DATE_FIELDS[i]];
+      if (d) { prev = { field: DATE_FIELDS[i], date: parseDate(d) }; break; }
+    }
+    for (let i = DATE_FIELDS.indexOf(f) + 1; i < DATE_FIELDS.length; i++) {
+      const d = estimatorFilled[DATE_FIELDS[i]];
+      if (d) { next = { field: DATE_FIELDS[i], date: parseDate(d) }; break; }
+    }
+
+    let est;
+    if (prev && next) {
+      const totalAvg = stepDays[next.field] - stepDays[prev.field];
+      const gapAvg = stepDays[f] - stepDays[prev.field];
+      const ratio = totalAvg > 0 ? gapAvg / totalAvg : 0;
+      const actualGap = (next.date.getTime() - prev.date.getTime()) / 86400000;
+      est = new Date(prev.date.getTime() + actualGap * ratio * 86400000);
+    } else if (prev) {
+      est = new Date(prev.date.getTime() + avg * 86400000);
+    } else if (next) {
+      est = new Date(next.date.getTime() - avg * 86400000);
+    } else {
+      continue;
+    }
+    result[f] = est.toISOString().slice(0, 10);
+  }
+  return result;
+}
+
+function applyEstimator() {
+  const estimates = computeEstimates();
+  const inputs = document.querySelectorAll("#estimator-card input[type=date]");
+  for (const inp of inputs) {
+    const step = inp.dataset.step;
+    if (estimatorFilled[step]) {
+      inp.value = estimatorFilled[step];
+      inp.className = "user-filled";
+    } else if (estimates[step]) {
+      inp.value = estimates[step];
+      inp.className = "estimated";
+    } else {
+      inp.value = "";
+      inp.className = "estimated";
+      inp.placeholder = "—";
+    }
+  }
+}
+
+function buildUrl() {
+  const u = new URL(window.location.href);
+  u.search = "";
+  for (const [key, val] of Object.entries(estimatorFilled)) {
+    const short = Object.entries(ESTIMATOR_KEYS).find(([, k]) => k === key);
+    if (short) u.searchParams.set(short[0], val);
+  }
+  const from = document.getElementById("filter-from").value;
+  const to = document.getElementById("filter-to").value;
+  if (from) u.searchParams.set("from", from);
+  if (to) u.searchParams.set("to", to);
+  u.searchParams.set("sort", sortField);
+  u.searchParams.set("dir", sortDir);
+  if (document.querySelector(`.filter-check[data-field="_missing_date"]`)?.classList.contains("checked")) {
+    u.searchParams.set("missing", "1");
+  }
+  for (const f of ["aor_date","background_check_date","test_completed_date","lpp_date","oath_ceremony_date"]) {
+    if (document.querySelector(`.filter-check[data-field="${f}"]`)?.classList.contains("checked")) {
+      u.searchParams.set("filter_" + f, "1");
+    }
+  }
+  for (const loc of selectedLocations) {
+    u.searchParams.append("loc", loc);
+  }
+  return u.toString();
+}
+
+function initEstimator() {
+  parseQueryParams();
+
+  document.getElementById("estimator-btn").addEventListener("click", () => {
+    document.getElementById("estimator-card").classList.toggle("hidden");
+  });
+
+  document.getElementById("estimator-collapse").addEventListener("click", () => {
+    estimatorCollapsed = !estimatorCollapsed;
+    document.getElementById("estimator-collapse").textContent = estimatorCollapsed ? "▼" : "▲";
+    document.querySelector(".estimator-grid").style.display = estimatorCollapsed ? "none" : "grid";
+  });
+
+  document.getElementById("estimator-clear").addEventListener("click", () => {
+    estimatorFilled = {};
+    applyEstimator();
+  });
+
+  document.getElementById("estimator-copy").addEventListener("click", () => {
+    const url = buildUrl();
+    navigator.clipboard.writeText(url).then(() => {
+      const btn = document.getElementById("estimator-copy");
+      btn.textContent = "Copied!";
+      setTimeout(() => { btn.textContent = "Copy link"; }, 1500);
+    }).catch(() => {
+      alert("Failed to copy: " + url);
+    });
+  });
+
+  document.querySelectorAll("#estimator-card input[type=date]").forEach(inp => {
+    inp.addEventListener("input", () => {
+      const step = inp.dataset.step;
+      if (inp.value && /^\d{4}-\d{2}-\d{2}$/.test(inp.value)) {
+        estimatorFilled[step] = inp.value;
+      } else {
+        delete estimatorFilled[step];
+      }
+      applyEstimator();
+    });
+  });
+
+  if (Object.keys(estimatorFilled).length > 0) {
+    document.getElementById("estimator-card").classList.remove("hidden");
+  }
+  applyEstimator();
+}
 
 function loadSettings() {
   try {
@@ -154,6 +336,7 @@ async function fetchAll() {
   document.getElementById("loading-state").classList.add("hidden");
   populateLocations();
   initTable();
+  applyEstimator();
   fetchLastScrape();
 }
 
@@ -325,6 +508,7 @@ function refreshTable(dataChanged) {
           }
         }
         saveSettings();
+        applyEstimator();
       } finally {
         card.classList.remove("busy");
       }
@@ -605,6 +789,7 @@ function init() {
   });
 
   renderColumnsPopup();
+  initEstimator();
   fetchAll();
 }
 

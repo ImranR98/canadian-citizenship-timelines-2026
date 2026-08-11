@@ -123,6 +123,59 @@ main { padding: 20px 24px; }
   color: var(--text-secondary);
 }
 
+/* ESTIMATOR */
+#estimator-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 20px;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 16px;
+}
+#estimator-card.hidden { display: none; }
+.estimator-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.estimator-header .btn { font-size: 0.78rem; }
+#estimator-collapse { margin-left: auto; padding: 2px 6px; }
+.estimator-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px 16px;
+}
+.estimator-field label {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-bottom: 2px;
+}
+.estimator-field input {
+  width: 100%;
+  padding: 5px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.84rem;
+}
+.estimator-field input.estimated {
+  background: #F3F4F6;
+  color: var(--text-secondary);
+  font-style: italic;
+  border-style: dashed;
+}
+.estimator-field input.user-filled {
+  background: var(--white);
+  color: var(--text);
+  font-style: normal;
+}
+.estimator-field input:focus {
+  outline: none;
+  border-color: var(--red);
+  box-shadow: 0 0 0 3px var(--red-light);
+}
+
 input[type="date"] {
   padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm);
   font-size: 0.84rem; background: var(--white);

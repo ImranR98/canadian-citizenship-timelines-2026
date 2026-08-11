@@ -55,6 +55,7 @@
         </div>
 
         <div class="filter-right">
+          <button class="btn" id="estimator-btn">Estimator</button>
           <button class="btn" id="cols-btn">Columns</button>
           <button class="btn" id="clear-btn">Reset</button>
         </div>
@@ -63,6 +64,26 @@
 
     <div id="cols-popup"></div>
     <div id="loc-popup" class="hidden popup-card"></div>
+
+    <div id="estimator-card" class="hidden">
+      <div class="estimator-header">
+        <span class="filter-label">Timeline Estimator</span>
+        <button class="btn" id="estimator-copy">Copy link</button>
+        <button class="btn" id="estimator-clear">Clear dates</button>
+        <button class="btn btn-ghost" id="estimator-collapse">▲</button>
+      </div>
+      <div class="estimator-grid">
+        <div class="estimator-field"><label>Application</label><input type="date" data-step="application_date"></div>
+        <div class="estimator-field"><label>AOR</label><input type="date" data-step="aor_date"></div>
+        <div class="estimator-field"><label>Background</label><input type="date" data-step="background_check_date"></div>
+        <div class="estimator-field"><label>Test Invitation</label><input type="date" data-step="test_invitation_date"></div>
+        <div class="estimator-field"><label>Test Taken</label><input type="date" data-step="test_taken_date"></div>
+        <div class="estimator-field"><label>Test Completed</label><input type="date" data-step="test_completed_date"></div>
+        <div class="estimator-field"><label>LPP</label><input type="date" data-step="lpp_date"></div>
+        <div class="estimator-field"><label>Oath Scheduled</label><input type="date" data-step="oath_scheduled_date"></div>
+        <div class="estimator-field"><label>Oath Ceremony</label><input type="date" data-step="oath_ceremony_date"></div>
+      </div>
+    </div>
 
     <div id="content">
       <div id="table-wrap">
