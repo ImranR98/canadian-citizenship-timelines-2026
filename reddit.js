@@ -279,12 +279,6 @@ function validate(extracted) {
   if (!hasAnyDate && !hasExtraSteps) {
     errors.push("No dates found — if the comment contains timeline info, dates should be extracted or inferred from relative references (e.g. 'a month ago')");
   }
-  const onlyAppDate = epochDates.application_date !== null
-    && DATE_FIELDS.slice(1).every(field => epochDates[field] === null)
-    && !hasExtraSteps;
-  if (onlyAppDate) {
-    errors.push("Only application_date found — likely incomplete extraction");
-  }
 
   let prevDate = null;
   let prevField = null;
@@ -335,7 +329,6 @@ async function extractTimeline(commentNode, baseUrl, model, apiKey) {
 
   let lastErrors;
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-    const sp = systemPrompt;
     let up;
     if (attempt === 0) {
       up = userPrompt;

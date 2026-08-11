@@ -46,13 +46,19 @@ async function scrape(threadUrl, cookie, limit) {
 
   const allChildren = [];
   let after = null;
+  const MAX_PAGES = 200;
+  let pageCount = 0;
 
   while (true) {
+    if (++pageCount > MAX_PAGES) throw new Error("Pagination exceeded max pages");
     const params = new URLSearchParams({ limit: String(limit) });
     if (after) params.append("after", after);
     const url = `${base}?${params}`;
 
-    const res = await fetch(url, { headers });
+    const ac = new AbortController();
+    const timer = setTimeout(() => ac.abort(), 30000);
+    const res = await fetch(url, { headers, signal: ac.signal });
+    clearTimeout(timer);
     if (!res.ok) {
       throw new Error(`Reddit returned ${res.status}`);
     }

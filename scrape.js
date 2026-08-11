@@ -84,34 +84,39 @@ async function run() {
     while (index < pending.length) {
       const i = index++;
       const { comment, hash } = pending[i];
-      const result = await extractTimeline(comment, LLM_BASE_URL, LLM_MODEL, LLM_API_KEY);
+      try {
+        const result = await extractTimeline(comment, LLM_BASE_URL, LLM_MODEL, LLM_API_KEY);
 
-      switch (result.status) {
-        case "processed":
-          state[result.id] = { status: "processed", hash };
-          const output = Object.assign({}, result.parsed, { source: comment });
-          const safeId = /^[a-z0-9]+$/i.test(result.id) ? result.id : "unknown";
-          fs.writeFileSync(path.join(DATA_DIR, `${safeId}.json`), JSON.stringify(output, null, 2));
-          saveState(state);
-          processed++;
-          console.log(`[${result.id}] processed`);
-          break;
-        case "null":
-          state[result.id] = { status: "not_applicable", hash };
-          saveState(state);
-          nullCount++;
-          console.log(`[${result.id}] skipped (not a timeline)`);
-          break;
-        case "invalid":
-          state[result.id] = { status: "invalid", hash };
-          saveState(state);
-          invalidCount++;
-          console.warn(`[${result.id}] INVALID after retries: ${result.reason}`);
-          break;
-        case "failed":
-          failedCount++;
-          console.error(`[${result.id}] FAILED: ${result.reason}`);
-          break;
+        switch (result.status) {
+          case "processed":
+            state[result.id] = { status: "processed", hash };
+            const output = Object.assign({}, result.parsed, { source: comment });
+            const safeId = /^[a-z0-9]+$/i.test(result.id) ? result.id : hash.substring(0, 10);
+            fs.writeFileSync(path.join(DATA_DIR, `${safeId}.json`), JSON.stringify(output, null, 2));
+            saveState(state);
+            processed++;
+            console.log(`[${result.id}] processed`);
+            break;
+          case "null":
+            state[result.id] = { status: "not_applicable", hash };
+            saveState(state);
+            nullCount++;
+            console.log(`[${result.id}] skipped (not a timeline)`);
+            break;
+          case "invalid":
+            state[result.id] = { status: "invalid", hash };
+            saveState(state);
+            invalidCount++;
+            console.warn(`[${result.id}] INVALID after retries: ${result.reason}`);
+            break;
+          case "failed":
+            failedCount++;
+            console.error(`[${result.id}] FAILED: ${result.reason}`);
+            break;
+        }
+      } catch (err) {
+        failedCount++;
+        console.error(`[${comment.id}] UNEXPECTED CRASH:`, err.message);
       }
     }
   }

@@ -12,12 +12,16 @@ async function prompt(systemText, userText, baseUrl, model, apiKey) {
   ];
 
   const url = baseUrl.replace(/\/+$/, "") + "/chat/completions";
+  const ac = new AbortController();
+  const timer = setTimeout(() => ac.abort(), 120000);
   const fetchStart = Date.now();
   const res = await fetch(url, {
     method: "POST",
     headers,
-    body: JSON.stringify({ model, messages })
+    body: JSON.stringify({ model, messages }),
+    signal: ac.signal
   });
+  clearTimeout(timer);
   const fetchMs = Date.now() - fetchStart;
 
   if (!res.ok) {

@@ -17,7 +17,7 @@ const { run } = require("./scrape");
 const { send: notify } = require("./notify");
 
 const PORT = parseInt(process.env.PORT, 10) || 3000;
-const INTERVAL_MS = (parseFloat(process.env.SCRAPE_INTERVAL_HOURS) || 24) * 3600000;
+const INTERVAL_MS = Math.max(0.1, parseFloat(process.env.SCRAPE_INTERVAL_HOURS) || 24) * 3600000;
 const NTFY_URL = process.env.NTFY_URL;
 const NTFY_AUTH = process.env.NTFY_AUTH;
 const ROOT = process.cwd();
@@ -181,16 +181,16 @@ async function runSafe() {
   }
 }
 
-process.on("uncaughtException", (err) => {
+process.on("uncaughtException", async (err) => {
   console.error("Fatal:", err.message);
-  notify(NTFY_URL, err.message, { title: "CCT26 crashed", priority: 5, tags: "skull", auth: NTFY_AUTH });
+  await notify(NTFY_URL, err.message, { title: "CCT26 crashed", priority: 5, tags: "skull", auth: NTFY_AUTH });
   process.exit(1);
 });
 
-process.on("unhandledRejection", (reason) => {
+process.on("unhandledRejection", async (reason) => {
   const msg = reason?.message || String(reason);
   console.error("Fatal rejection:", msg);
-  notify(NTFY_URL, msg, { title: "CCT26 crashed", priority: 5, tags: "skull", auth: NTFY_AUTH });
+  await notify(NTFY_URL, msg, { title: "CCT26 crashed", priority: 5, tags: "skull", auth: NTFY_AUTH });
   process.exit(1);
 });
 
