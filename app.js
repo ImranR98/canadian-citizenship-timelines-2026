@@ -364,8 +364,14 @@ function initTable() {
 
   table.on("cellClick", function(e, cell) {
     const field = cell.getColumn().getField();
-    if (field === "notes") { expandedNotes = !expandedNotes; table.redraw(true); }
-    else if (field === "extra_steps") { expandedExtra = !expandedExtra; table.redraw(true); }
+    if (field !== "notes" && field !== "extra_steps") return;
+    const scrollEl = table.rowManager.element;
+    const st = scrollEl.scrollTop;
+    const sl = scrollEl.scrollLeft;
+    if (field === "notes") expandedNotes = !expandedNotes;
+    else expandedExtra = !expandedExtra;
+    table.redraw(true);
+    requestAnimationFrame(() => { scrollEl.scrollTop = st; scrollEl.scrollLeft = sl; });
   });
 
   updateStats(filteredItems);
