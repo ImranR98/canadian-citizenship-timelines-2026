@@ -121,7 +121,7 @@ function example1() {
     lpp_date: "2026-06-24",
     oath_scheduled_date: null,
     oath_ceremony_date: "2026-08-06",
-    application_type: null,
+
     location: "Ottawa [Sydney]",
     notes: "Family of 2.",
     extra_steps: []
@@ -139,7 +139,7 @@ function example2() {
     lpp_date: null,
     oath_scheduled_date: null,
     oath_ceremony_date: null,
-    application_type: null,
+
     location: null,
     notes: "Test completed date inferred from 'a month ago' relative to comment date 2026-08-04. LPP still pending.",
     extra_steps: []
@@ -157,7 +157,7 @@ function example3() {
     lpp_date: null,
     oath_scheduled_date: null,
     oath_ceremony_date: null,
-    application_type: null,
+
     location: null,
     notes: "Test notification received Aug 5. Also asking about tracker access.",
     extra_steps: []
@@ -175,7 +175,7 @@ function example4() {
     lpp_date: null,
     oath_scheduled_date: null,
     oath_ceremony_date: null,
-    application_type: null,
+
     location: "Vancouver",
     notes: "Year inferred as 2026 from comment post date.",
     extra_steps: []
@@ -193,7 +193,7 @@ function example5() {
     lpp_date: null,
     oath_scheduled_date: null,
     oath_ceremony_date: null,
-    application_type: null,
+
     location: null,
     notes: "AOR date reported in reply on Aug 6.",
     extra_steps: []
@@ -211,7 +211,7 @@ function example7() {
     lpp_date: null,
     oath_scheduled_date: null,
     oath_ceremony_date: null,
-    application_type: null,
+
     location: null,
     notes: "Year and day inferred from month-level references. Only application and test dates were reported; no other steps were mentioned.",
     extra_steps: []

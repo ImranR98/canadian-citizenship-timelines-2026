@@ -11,17 +11,11 @@ const COLUMNS = [
   { key: "oath_scheduled_date", label: "Oath Scheduled",   isDate: true },
   { key: "oath_ceremony_date",  label: "Oath Ceremony",    isDate: true },
   { key: "location",            label: "Location",         isDate: false },
-  { key: "application_type",    label: "App Type",         isDate: false },
   { key: "extra_steps",         label: "Extra Steps",      isDate: false },
   { key: "notes",               label: "Notes",            isDate: false },
 ];
 
-const DEFAULT_VISIBLE = new Set([
-  "application_date", "aor_date", "background_check_date",
-  "test_invitation_date", "test_taken_date", "test_completed_date",
-  "lpp_date", "oath_scheduled_date", "oath_ceremony_date",
-  "location", "notes",
-]);
+const DEFAULT_VISIBLE = new Set(COLUMNS.map(c => c.key));
 
 let allItems = [];
 let table;
