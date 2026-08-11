@@ -367,6 +367,7 @@ function initTable() {
     data: filteredItems,
     columns: cols,
     layout: "fitDataFill",
+    columnDefaults: { resizable: false },
     height: "calc(100vh - 230px)",
     movableColumns: false,
     selectable: 1,
