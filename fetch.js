@@ -1,3 +1,5 @@
+"use strict";
+
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -29,8 +31,14 @@ function buildTree(children) {
 async function scrape(threadUrl, cookie, limit) {
   limit = limit || 1500;
   const base = threadUrl.replace(/\/?$/, "/") + ".json";
+
+  const targetHost = new URL(base).hostname;
+  if (!targetHost.endsWith("reddit.com")) {
+    throw new Error("Refusing to send cookie to non-Reddit domain");
+  }
+
   const headers = {
-    "User-Agent": "node:reddit-scraper:v1.0 (by /u/example)"
+    "User-Agent": "node:cct26-scraper:v1.0"
   };
   if (cookie) {
     headers["Cookie"] = cookie;
@@ -38,7 +46,6 @@ async function scrape(threadUrl, cookie, limit) {
 
   const allChildren = [];
   let after = null;
-  let page = 0;
 
   while (true) {
     const params = new URLSearchParams({ limit: String(limit) });
@@ -47,7 +54,7 @@ async function scrape(threadUrl, cookie, limit) {
 
     const res = await fetch(url, { headers });
     if (!res.ok) {
-      throw new Error(`Reddit returned ${res.status}: ${res.statusText}`);
+      throw new Error(`Reddit returned ${res.status}`);
     }
 
     const json = await res.json();
@@ -60,7 +67,6 @@ async function scrape(threadUrl, cookie, limit) {
     allChildren.push(...children);
     after = listing.data.after;
 
-    page++;
     if (!after) break;
     await sleep(200);
   }

@@ -1,3 +1,5 @@
+"use strict";
+
 const { scrape } = require("./fetch");
 const { extractTimeline, hashThread } = require("./reddit");
 const fs = require("fs");
@@ -12,7 +14,9 @@ const TEST_SAMPLE_SIZE = 5;
 function loadState() {
   try {
     if (fs.existsSync(STATE_FILE)) return JSON.parse(fs.readFileSync(STATE_FILE, "utf-8"));
-  } catch (_) {}
+  } catch (e) {
+    console.debug("Failed to load state:", e.message);
+  }
   return {};
 }
 

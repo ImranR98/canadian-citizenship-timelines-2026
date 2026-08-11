@@ -1,3 +1,5 @@
+"use strict";
+
 const COLUMNS = [
   { key: "application_date",    label: "Application",      isDate: true },
   { key: "aor_date",            label: "AOR",              isDate: true },
@@ -29,7 +31,7 @@ let sortDir = "desc";
 let selectedId = null;
 
 function loadColumns() {
-  try { const s = localStorage.getItem("columns"); if (s) visibleColumns = new Set(JSON.parse(s)); } catch (_) {}
+  try { const s = localStorage.getItem("columns"); if (s) visibleColumns = new Set(JSON.parse(s));   } catch (e) { console.debug("last_scrape fetch failed:", e.message); }
 }
 function saveColumns() { localStorage.setItem("columns", JSON.stringify([...visibleColumns])); }
 loadColumns();
@@ -106,7 +108,7 @@ async function fetchLastScrape() {
     const d = new Date(time);
     document.getElementById("last-scrape").textContent =
       `Last scraped ${d.toLocaleDateString()} ${d.toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}`;
-  } catch (_) {}
+  } catch (e) { console.debug("localStorage load failed:", e.message); }
 }
 
 function getFiltered() {
@@ -256,27 +258,70 @@ function renderSidePanel(item) {
 
   document.getElementById("panel-title").textContent = item.application_date || item._id;
 
-  body.innerHTML = `
-    <div class="id-tag">ID: ${item._id}</div>
-    <div class="section-title">Timeline</div>
-    <table class="field-table">
-      ${COLUMNS.filter(c => c.key === "application_date" || visibleColumns.has(c.key)).map(c => `
-        <tr><td>${c.label}</td><td>${item[c.key] || "—"}${c.isDate && item._months[c.key] !== null ? ` · ${item._months[c.key]}mo` : ""}</td></tr>
-      `).join("")}
-    </table>
-    ${item.extra_steps && item.extra_steps.length ? `
-    <div class="section-title">Extra Steps</div>
-    <table class="field-table">
-      ${item.extra_steps.map(s => `<tr><td>${s.step}</td><td>${s.date || "—"}</td></tr>`).join("")}
-    </table>` : ""}
-    ${item.notes ? `
-    <div class="section-title">Notes</div>
-    <div class="notes-text">${item.notes}</div>` : ""}
-    <div class="section-title">Source</div>
-    <div class="source-thread">${formatSourceThread(item.source)}</div>
-  `;
+  body.replaceChildren();
+
+  const idTag = document.createElement("div");
+  idTag.className = "id-tag";
+  idTag.textContent = `ID: ${item._id}`;
+  body.appendChild(idTag);
+
+  body.appendChild(sectionTitle("Timeline"));
+  const table = document.createElement("table");
+  table.className = "field-table";
+  const cols = COLUMNS.filter(c => c.key === "application_date" || visibleColumns.has(c.key));
+  for (const c of cols) {
+    const tr = document.createElement("tr");
+    const td1 = document.createElement("td");
+    td1.textContent = c.label;
+    const td2 = document.createElement("td");
+    let val = item[c.key] || "—";
+    if (c.isDate && item._months[c.key] !== null) val += ` · ${item._months[c.key]}mo`;
+    td2.textContent = val;
+    tr.appendChild(td1);
+    tr.appendChild(td2);
+    table.appendChild(tr);
+  }
+  body.appendChild(table);
+
+  if (item.extra_steps && item.extra_steps.length) {
+    body.appendChild(sectionTitle("Extra Steps"));
+    const esTable = document.createElement("table");
+    esTable.className = "field-table";
+    for (const s of item.extra_steps) {
+      const tr = document.createElement("tr");
+      const td1 = document.createElement("td");
+      td1.textContent = s.step;
+      const td2 = document.createElement("td");
+      td2.textContent = s.date || "—";
+      tr.appendChild(td1);
+      tr.appendChild(td2);
+      esTable.appendChild(tr);
+    }
+    body.appendChild(esTable);
+  }
+
+  if (item.notes) {
+    body.appendChild(sectionTitle("Notes"));
+    const notesDiv = document.createElement("div");
+    notesDiv.className = "notes-text";
+    notesDiv.textContent = item.notes;
+    body.appendChild(notesDiv);
+  }
+
+  body.appendChild(sectionTitle("Source"));
+  const sourceDiv = document.createElement("div");
+  sourceDiv.className = "source-thread";
+  sourceDiv.textContent = formatSourceThread(item.source);
+  body.appendChild(sourceDiv);
 
   document.getElementById("close-panel").onclick = closePanel;
+}
+
+function sectionTitle(text) {
+  const div = document.createElement("div");
+  div.className = "section-title";
+  div.textContent = text;
+  return div;
 }
 
 function closePanel() {

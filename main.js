@@ -1,3 +1,5 @@
+"use strict";
+
 require("dotenv").config();
 
 for (const method of ["log", "warn", "error"]) {
@@ -18,42 +20,90 @@ const PORT = parseInt(process.env.PORT, 10) || 3000;
 const INTERVAL_MS = (parseFloat(process.env.SCRAPE_INTERVAL_HOURS) || 24) * 3600000;
 const NTFY_URL = process.env.NTFY_URL;
 const NTFY_AUTH = process.env.NTFY_AUTH;
+const ROOT = process.cwd();
 
 const MIME = {
   ".html": "text/html", ".js": "application/javascript", ".json": "application/json",
   ".css": "text/css", ".svg": "image/svg+xml", ".png": "image/png", ".ico": "image/x-icon",
 };
 
+const ALLOWED_EXTENSIONS = new Set(Object.keys(MIME));
+
+const CSP = "default-src 'self'; script-src 'self' https://unpkg.com https://plausible.imranr.dev; "
+  + "style-src 'self' https://unpkg.com 'unsafe-inline'; img-src 'self' data:; "
+  + "connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'";
+
 function serveFile(filePath, res) {
-  fs.readFile(filePath, (err, data) => {
+  const resolved = path.resolve(filePath);
+  if (!resolved.startsWith(ROOT + path.sep) && resolved !== path.join(ROOT, "index.html")) {
+    res.writeHead(403, { "Content-Type": "text/plain" });
+    res.end("Forbidden");
+    return;
+  }
+  const ext = path.extname(resolved);
+  if (ext && !ALLOWED_EXTENSIONS.has(ext)) {
+    res.writeHead(403, { "Content-Type": "text/plain" });
+    res.end("Forbidden");
+    return;
+  }
+  fs.readFile(resolved, (err, data) => {
     if (err) {
       res.writeHead(404, { "Content-Type": "text/plain" });
       res.end("Not found");
       return;
     }
-    res.writeHead(200, { "Content-Type": MIME[path.extname(filePath)] || "application/octet-stream" });
+    const headers = { "Content-Type": MIME[ext] || "application/octet-stream" };
+    if (ext === ".html") {
+      headers["Content-Security-Policy"] = CSP;
+      headers["X-Frame-Options"] = "DENY";
+      headers["X-Content-Type-Options"] = "nosniff";
+    }
+    res.writeHead(200, headers);
     res.end(data);
   });
 }
 
-const server = http.createServer((req, res) => {
-  const url = req.url.split("?")[0];
+function isValidPath(p) {
+  if (!p) return false;
+  if (p.includes("\0") || p.includes("%00")) return false;
+  return true;
+}
 
-  if (url === "/") {
-    serveFile(path.join(process.cwd(), "index.html"), res);
-  } else if (url.startsWith("/data/")) {
-    serveFile(path.join(process.cwd(), url), res);
+const server = http.createServer((req, res) => {
+  const rawUrl = req.url.split("?")[0];
+  if (rawUrl.length > 1024) {
+    res.writeHead(414);
+    res.end("URI Too Long");
+    return;
+  }
+
+  let filePath;
+
+  if (rawUrl === "/") {
+    filePath = path.join(ROOT, "index.html");
+  } else if (rawUrl.startsWith("/data/")) {
+    filePath = path.join(ROOT, rawUrl);
   } else {
-    const p = path.join(process.cwd(), url.replace(/^\//, ""));
-    if (fs.existsSync(p)) {
-      serveFile(p, res);
-    } else if (fs.existsSync(p + ".html")) {
-      serveFile(p + ".html", res);
-    } else {
-      serveFile(p, res);
+    const sanitized = rawUrl.replace(/^\//, "").replace(/\.\.\//g, "");
+    filePath = path.join(ROOT, sanitized);
+    if (fs.existsSync(filePath + ".html")) {
+      filePath = filePath + ".html";
     }
   }
+
+  if (!isValidPath(filePath)) {
+    res.writeHead(400);
+    res.end("Bad Request");
+    return;
+  }
+
+  serveFile(filePath, res);
 });
+
+server.maxHeadersCount = 50;
+server.headersTimeout = 10000;
+server.requestTimeout = 30000;
+server.keepAliveTimeout = 5000;
 
 server.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
@@ -86,7 +136,7 @@ function checkCookieExpiry(cookie) {
 }
 
 function saveLastScrape() {
-  const dir = path.join(process.cwd(), "data");
+  const dir = path.join(ROOT, "data");
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(path.join(dir, "last_scrape.json"), JSON.stringify({ time: new Date().toISOString() }));
 }
@@ -105,7 +155,7 @@ async function runSafe() {
     summary = await run();
     saveLastScrape();
   } catch (err) {
-    console.error("Scrape run failed:", err);
+    console.error("Scrape run failed:", err.message);
     saveLastScrape();
     notify(NTFY_URL, `Scrape run failed: ${err.message}`, { title: "CCT26 error", priority: 4, tags: "warning", auth: NTFY_AUTH });
     isRunning = false;
@@ -128,18 +178,19 @@ async function runSafe() {
 }
 
 process.on("uncaughtException", (err) => {
-  console.error("Fatal:", err);
+  console.error("Fatal:", err.message);
   notify(NTFY_URL, err.message, { title: "CCT26 crashed", priority: 5, tags: "skull", auth: NTFY_AUTH });
   process.exit(1);
 });
 
 process.on("unhandledRejection", (reason) => {
-  console.error("Fatal rejection:", reason);
-  notify(NTFY_URL, reason?.message || String(reason), { title: "CCT26 crashed", priority: 5, tags: "skull", auth: NTFY_AUTH });
+  const msg = reason?.message || String(reason);
+  console.error("Fatal rejection:", msg);
+  notify(NTFY_URL, msg, { title: "CCT26 crashed", priority: 5, tags: "skull", auth: NTFY_AUTH });
   process.exit(1);
 });
 
 console.log(`Scrape interval: ${Math.round(INTERVAL_MS / 60000)} minutes`);
-if (NTFY_URL) console.log(`Notifications: ${NTFY_URL}`);
+if (NTFY_URL) console.log("Notifications enabled");
 runSafe();
 setInterval(() => runSafe(), INTERVAL_MS);

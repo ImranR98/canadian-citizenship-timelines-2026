@@ -1,3 +1,5 @@
+"use strict";
+
 async function send(ntfyUrl, message, { title, priority, tags, auth } = {}) {
   if (!ntfyUrl) return;
 

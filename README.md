@@ -1,4 +1,4 @@
-# Citizen Timeline
+# Canadian Citizenship Timelines 2026
 
 A pipeline that scrapes Canadian citizenship application timelines from Reddit, extracts structured data using an LLM, and visualizes the results in a browser-based dashboard.
 

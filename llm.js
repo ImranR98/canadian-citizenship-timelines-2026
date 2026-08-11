@@ -1,3 +1,5 @@
+"use strict";
+
 async function prompt(systemText, userText, baseUrl, model, apiKey) {
   const headers = { "Content-Type": "application/json" };
   if (apiKey) {
@@ -18,8 +20,7 @@ async function prompt(systemText, userText, baseUrl, model, apiKey) {
   const fetchMs = Date.now() - fetchStart;
 
   if (!res.ok) {
-    const body = await res.text().catch(() => "");
-    throw new Error(`LLM API returned ${res.status}: ${res.statusText}${body ? " — " + body.slice(0, 200) : ""}`);
+    throw new Error(`LLM API returned ${res.status}`);
   }
 
   const json = await res.json();

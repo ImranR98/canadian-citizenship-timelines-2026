@@ -1,3 +1,5 @@
+"use strict";
+
 const { prompt: callLLM } = require("./llm");
 const { scrape } = require("./fetch");
 const crypto = require("crypto");
@@ -331,6 +333,7 @@ async function extractTimeline(commentNode, baseUrl, model, apiKey) {
   const userPrompt = buildUserPrompt(threadText);
   const attempts = [];
 
+  let lastErrors;
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     const sp = systemPrompt;
     let up;
