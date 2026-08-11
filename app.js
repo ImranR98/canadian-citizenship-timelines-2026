@@ -358,41 +358,16 @@ function initTable() {
     movableColumns: false,
     selectable: 1,
     rowClick: function(e, row) { selectItem(row.getData()); },
+    cellClick: function(e, cell) {
+      const field = cell.getColumn().getField();
+      if (field === "notes") { expandedNotes = !expandedNotes; table.redraw(true); }
+      else if (field === "extra_steps") { expandedExtra = !expandedExtra; table.redraw(true); }
+    },
     placeholder: "No matching timelines.",
     initialSort: [{ column: sortField, dir: sortDir }],
   });
 
   updateStats(filteredItems);
-  setTimeout(addHeaderButtons, 100);
-}
-
-function addHeaderButtons() {
-  if (!table) return;
-  const cols = table.getColumns();
-  for (const col of cols) {
-    const field = col.getField();
-    if (field !== "notes" && field !== "extra_steps") continue;
-    try {
-      const el = col.getElement();
-      if (!el) continue;
-      el.querySelector(".col-expand")?.remove();
-      const content = el.querySelector(".tabulator-col-content") || el.querySelector(".tabulator-col-title-holder") || el;
-      const btn = document.createElement("span");
-      btn.className = "col-expand";
-      const expanded = field === "notes" ? expandedNotes : expandedExtra;
-      btn.textContent = expanded ? " «" : " »";
-      btn.title = expanded ? "Collapse" : "Expand";
-      btn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-        if (field === "notes") expandedNotes = !expandedNotes;
-        else expandedExtra = !expandedExtra;
-        addHeaderButtons();
-        table.redraw(true);
-      });
-      content.appendChild(btn);
-    } catch (e) { console.debug("Header button failed for", field, e.message); }
-  }
 }
 
 function selectItem(item) {
