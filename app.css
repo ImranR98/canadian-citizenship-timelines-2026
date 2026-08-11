@@ -24,10 +24,23 @@
 header {
   background: var(--red);
   color: var(--white);
-  padding: 14px 24px;
+  padding: 10px 24px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 header h1 { font-size: 1.15rem; font-weight: 700; }
+.btn-header {
+  background: rgba(255,255,255,0.15);
+  border-color: rgba(255,255,255,0.3);
+  color: var(--white);
+  font-size: 0.8rem;
+}
+.btn-header:hover {
+  background: rgba(255,255,255,0.25);
+  border-color: rgba(255,255,255,0.5);
+}
 header .badge {
   display: inline-block;
   background: rgba(255,255,255,0.2);
