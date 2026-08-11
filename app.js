@@ -29,6 +29,7 @@ let visibleColumns = new Set(DEFAULT_VISIBLE);
 let sortField = "application_date";
 let sortDir = "desc";
 let selectedId = null;
+let selectedLocations = new Set();
 
 function loadColumns() {
   try { const s = localStorage.getItem("columns"); if (s) visibleColumns = new Set(JSON.parse(s)); } catch (e) { console.debug("Failed to load column preferences:", e.message); }
@@ -106,8 +107,46 @@ async function fetchAll() {
   });
 
   document.getElementById("loading-state").classList.add("hidden");
+  populateLocations();
   initTable();
   fetchLastScrape();
+}
+
+function populateLocations() {
+  const locations = [...new Set(allItems.map(i => i.location).filter(Boolean))].sort();
+  const popup = document.getElementById("loc-popup");
+  popup.replaceChildren();
+
+  for (const loc of locations) {
+    const label = document.createElement("label");
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.checked = selectedLocations.has(loc);
+    label.appendChild(cb);
+    label.appendChild(document.createTextNode(" " + loc));
+    label.addEventListener("click", (e) => {
+      e.stopPropagation();
+      cb.checked = !cb.checked;
+      if (cb.checked) selectedLocations.add(loc);
+      else selectedLocations.delete(loc);
+      updateLocButton();
+      refreshTable();
+    });
+    popup.appendChild(label);
+  }
+
+  updateLocButton();
+}
+
+function updateLocButton() {
+  const btn = document.getElementById("loc-btn");
+  if (selectedLocations.size === 0) {
+    btn.textContent = "All locations";
+  } else if (selectedLocations.size === 1) {
+    btn.textContent = [...selectedLocations][0];
+  } else {
+    btn.textContent = `${selectedLocations.size} locations`;
+  }
 }
 
 async function fetchLastScrape() {
@@ -140,6 +179,7 @@ function getFiltered() {
       if (field === "_missing_date") continue;
       if (on && !item[field]) return false;
     }
+    if (selectedLocations.size > 0 && !selectedLocations.has(item.location)) return false;
     return true;
   });
 
@@ -440,6 +480,8 @@ function init() {
     sortDir = "desc";
     document.getElementById("sort-dir").textContent = "Newest first";
     document.getElementById("sort-field").value = "application_date";
+    selectedLocations.clear();
+    updateLocButton();
     refreshTable();
   });
 
@@ -452,7 +494,22 @@ function init() {
   document.getElementById("filter-to").addEventListener("input", d);
 
   document.getElementById("cols-btn").addEventListener("click", toggleColumnsPopup);
-  document.addEventListener("click", () => document.getElementById("cols-popup").classList.remove("show"));
+  document.addEventListener("click", () => {
+    document.getElementById("cols-popup").classList.remove("show");
+    document.getElementById("loc-popup").classList.remove("show");
+  });
+
+  document.getElementById("loc-btn").addEventListener("click", (e) => {
+    e.stopPropagation();
+    const popup = document.getElementById("loc-popup");
+    popup.classList.toggle("show");
+    if (popup.classList.contains("show")) {
+      const btn = document.getElementById("loc-btn");
+      const rect = btn.getBoundingClientRect();
+      popup.style.top = (rect.bottom + 4) + "px";
+      popup.style.left = Math.min(rect.left, window.innerWidth - 220) + "px";
+    }
+  });
 
   document.getElementById("about-btn").addEventListener("click", () => {
     document.getElementById("about-modal").classList.remove("hidden");

@@ -148,14 +148,15 @@ button { cursor: pointer; font-size: 0.82rem; font-weight: 500; }
 #clear-btn:hover { color: var(--white); background: var(--red); }
 
 /* COLUMN POPUP */
-#cols-popup {
+#cols-popup, #loc-popup {
   position: absolute; background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--radius); box-shadow: 0 4px 12px rgba(0,0,0,0.12);
   padding: 12px; z-index: 50; display: none; flex-direction: column; gap: 6px; min-width: 200px;
 }
-#cols-popup.show { display: flex; }
-#cols-popup label { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; cursor: pointer; }
-#cols-popup label input { accent-color: var(--red); }
+#cols-popup.show, #loc-popup.show { display: flex; }
+#cols-popup label, #loc-popup label { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; cursor: pointer; }
+#cols-popup label input, #loc-popup label input { accent-color: var(--red); }
+#loc-popup { max-height: 300px; overflow-y: auto; }
 
 /* TABLE WRAPPER */
 #table-wrap {
