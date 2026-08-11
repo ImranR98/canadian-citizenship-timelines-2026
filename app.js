@@ -354,17 +354,18 @@ function initTable() {
     data: filteredItems,
     columns: cols,
     layout: "fitDataFill",
-    height: "calc(100vh - 280px)",
+    height: "calc(100vh - 230px)",
     movableColumns: false,
     selectable: 1,
     rowClick: function(e, row) { selectItem(row.getData()); },
-    cellClick: function(e, cell) {
-      const field = cell.getColumn().getField();
-      if (field === "notes") { expandedNotes = !expandedNotes; table.redraw(true); }
-      else if (field === "extra_steps") { expandedExtra = !expandedExtra; table.redraw(true); }
-    },
     placeholder: "No matching timelines.",
     initialSort: [{ column: sortField, dir: sortDir }],
+  });
+
+  table.on("cellClick", function(e, cell) {
+    const field = cell.getColumn().getField();
+    if (field === "notes") { expandedNotes = !expandedNotes; table.redraw(true); }
+    else if (field === "extra_steps") { expandedExtra = !expandedExtra; table.redraw(true); }
   });
 
   updateStats(filteredItems);
