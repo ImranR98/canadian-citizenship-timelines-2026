@@ -30,9 +30,9 @@ const MIME = {
 
 const ALLOWED_EXTENSIONS = new Set(Object.keys(MIME));
 
-const CSP = "default-src 'self'; script-src 'self' https://unpkg.com https://plausible.imranr.dev; "
+const CSP = "default-src 'self'; script-src 'self' https://unpkg.com https://plausible.imranr.dev 'sha256-XVj80uUSzt3JWa6FTzTaafmEiRYXOb5edzL/N5F/s6U='; "
   + "style-src 'self' https://unpkg.com 'unsafe-inline'; img-src 'self' data:; "
-  + "connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'";
+  + "connect-src 'self' https://unpkg.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'";
 
 function serveFile(filePath, res) {
   const resolved = path.resolve(filePath);

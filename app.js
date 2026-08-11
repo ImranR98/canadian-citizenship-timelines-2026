@@ -17,6 +17,8 @@ const COLUMNS = [
 
 const DEFAULT_VISIBLE = new Set(COLUMNS.map(c => c.key));
 
+const DATE_FIELDS = COLUMNS.filter(c => c.isDate).map(c => c.key);
+
 let allItems = [];
 let table;
 let visibleColumns = new Set(DEFAULT_VISIBLE);
