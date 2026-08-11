@@ -33,7 +33,7 @@ async function scrape(threadUrl, cookie, limit) {
   const base = threadUrl.replace(/\/?$/, "/") + ".json";
 
   const targetHost = new URL(base).hostname;
-  if (!targetHost.endsWith("reddit.com")) {
+  if (!(targetHost === "www.reddit.com" || targetHost === "oauth.reddit.com" || targetHost.endsWith(".reddit.com"))) {
     throw new Error("Refusing to send cookie to non-Reddit domain");
   }
 

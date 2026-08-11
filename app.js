@@ -140,9 +140,10 @@ function getFiltered() {
   items.sort((a, b) => {
     const va = a[sortField] || "\uffff";
     const vb = b[sortField] || "\uffff";
-    if (va < vb) return -dir;
-    if (va > vb) return dir;
-    return 0;
+    if (va === vb) return 0;
+    if (va === "\uffff") return 1;
+    if (vb === "\uffff") return -1;
+    return va < vb ? -dir : dir;
   });
 
   return items;
@@ -361,7 +362,7 @@ function renderColumnsPopup() {
 }
 
 function rebuildTable() {
-  table.destroy();
+  if (table) table.destroy();
   initTable();
 }
 

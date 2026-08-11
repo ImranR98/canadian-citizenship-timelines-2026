@@ -340,7 +340,7 @@ async function extractTimeline(commentNode, baseUrl, model, apiKey) {
     const t0 = Date.now();
     let response;
     try {
-      response = await callLLM(sp, up, baseUrl, model, apiKey);
+      response = await callLLM(systemPrompt, up, baseUrl, model, apiKey);
     } catch (err) {
       const ms = Date.now() - t0;
       attempts.push({ attempt, error: err.message, ms });
