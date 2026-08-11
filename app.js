@@ -118,6 +118,23 @@ function computeEstimates() {
     }
     result[f] = est.toISOString().slice(0, 10);
   }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  let shiftMs = 0;
+  for (const f of DATE_FIELDS) {
+    if (result[f]) {
+      let d = new Date(result[f] + "T00:00:00Z");
+      if (d < today) {
+        const diffMs = today.getTime() - d.getTime();
+        if (diffMs > shiftMs) shiftMs = diffMs;
+      }
+      if (shiftMs > 0) {
+        d = new Date(d.getTime() + shiftMs);
+        result[f] = d.toISOString().slice(0, 10);
+      }
+    }
+  }
   return result;
 }
 
