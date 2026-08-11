@@ -116,6 +116,7 @@ function populateLocations() {
   const locations = [...new Set(allItems.map(i => i.location).filter(Boolean))].sort();
   const popup = document.getElementById("loc-popup");
   popup.replaceChildren();
+  popup.onclick = (e) => e.stopPropagation();
 
   for (const loc of locations) {
     const label = document.createElement("label");
