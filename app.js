@@ -140,15 +140,17 @@ function computeEstimates() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   let shiftMs = 0;
+  let shifting = false;
   for (const f of DATE_FIELDS) {
+    if (f === currentStep) shifting = true;
     if (estimates[f]) {
       let d = new Date(estimates[f] + "T00:00:00Z");
-      if (d < today) {
+      if (shifting && d < today) {
         const diffMs = today.getTime() - d.getTime();
         if (diffMs > shiftMs) shiftMs = diffMs;
         pinned[f] = true;
       }
-      if (shiftMs > 0) {
+      if (shiftMs > 0 && shifting) {
         d = new Date(d.getTime() + shiftMs);
         estimates[f] = d.toISOString().slice(0, 10);
       }
@@ -248,7 +250,7 @@ function initEstimator() {
   });
 
   document.querySelectorAll("#estimator-card input[type=date]").forEach(inp => {
-    inp.addEventListener("input", () => {
+    inp.addEventListener("change", () => {
       const step = inp.dataset.step;
       if (inp.value && /^\d{4}-\d{2}-\d{2}$/.test(inp.value)) {
         estimatorFilled[step] = inp.value;
