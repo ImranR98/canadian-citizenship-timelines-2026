@@ -68,13 +68,15 @@ function parseQueryParams() {
 
 function computeEstimates() {
   const avgs = computeAverages(getFiltered());
-  const result = {};
+  const expectations = {};
+  const estimates = {};
+  const pinned = {};
 
   const known = [];
   for (const f of DATE_FIELDS) {
     if (estimatorFilled[f]) known.push({ field: f, date: parseDate(estimatorFilled[f]) });
   }
-  if (known.length === 0) return result;
+  if (known.length === 0) return { estimates, expectations, pinned };
 
   const stepDays = {};
   for (const f of DATE_FIELDS) {
@@ -87,9 +89,9 @@ function computeEstimates() {
   }
 
   for (const f of DATE_FIELDS) {
-    if (estimatorFilled[f]) continue;
     if (stepDays[f] === null) continue;
 
+    const isFilled = !!estimatorFilled[f];
     let prev = null, next = null;
     for (let i = DATE_FIELDS.indexOf(f) - 1; i >= 0; i--) {
       const d = estimatorFilled[DATE_FIELDS[i]];
@@ -100,59 +102,79 @@ function computeEstimates() {
       if (d) { next = { field: DATE_FIELDS[i], date: parseDate(d) }; break; }
     }
 
-    let est;
+    let exp;
     if (prev && next && stepDays[prev.field] !== null && stepDays[next.field] !== null) {
       const totalAvg = stepDays[next.field] - stepDays[prev.field];
       const gapAvg = stepDays[f] - stepDays[prev.field];
       const ratio = totalAvg > 0 ? gapAvg / totalAvg : 0;
       const actualGap = (next.date.getTime() - prev.date.getTime()) / 86400000;
-      est = new Date(prev.date.getTime() + actualGap * ratio * 86400000);
+      exp = new Date(prev.date.getTime() + actualGap * ratio * 86400000);
     } else if (prev && stepDays[prev.field] !== null) {
       const gap = stepDays[f] - stepDays[prev.field];
-      est = new Date(prev.date.getTime() + gap * 86400000);
+      exp = new Date(prev.date.getTime() + gap * 86400000);
     } else if (next && stepDays[next.field] !== null) {
       const gap = stepDays[next.field] - stepDays[f];
-      est = new Date(next.date.getTime() - gap * 86400000);
+      exp = new Date(next.date.getTime() - gap * 86400000);
     } else {
       continue;
     }
-    result[f] = est.toISOString().slice(0, 10);
+    expectations[f] = exp.toISOString().slice(0, 10);
+
+    if (!isFilled) {
+      estimates[f] = exp.toISOString().slice(0, 10);
+    }
   }
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   let shiftMs = 0;
   for (const f of DATE_FIELDS) {
-    if (result[f]) {
-      let d = new Date(result[f] + "T00:00:00Z");
+    if (estimates[f]) {
+      let d = new Date(estimates[f] + "T00:00:00Z");
       if (d < today) {
         const diffMs = today.getTime() - d.getTime();
         if (diffMs > shiftMs) shiftMs = diffMs;
+        pinned[f] = true;
       }
       if (shiftMs > 0) {
         d = new Date(d.getTime() + shiftMs);
-        result[f] = d.toISOString().slice(0, 10);
+        estimates[f] = d.toISOString().slice(0, 10);
       }
     }
   }
-  return result;
+  return { estimates, expectations, pinned };
 }
 
 function applyEstimator() {
-  const estimates = computeEstimates();
+  const { estimates, expectations, pinned } = computeEstimates();
   const inputs = document.querySelectorAll("#estimator-card input[type=date]");
   for (const inp of inputs) {
     const step = inp.dataset.step;
+    let actual;
     if (estimatorFilled[step]) {
       inp.value = estimatorFilled[step];
+      actual = estimatorFilled[step];
       inp.className = "user-filled";
     } else if (estimates[step]) {
       inp.value = estimates[step];
+      actual = estimates[step];
       inp.className = "estimated";
     } else {
       inp.value = "";
       inp.className = "estimated";
       inp.placeholder = "—";
+      continue;
+    }
+
+    const expDate = expectations[step];
+    if (expDate && actual) {
+      if (pinned[step]) {
+        inp.classList.add("pinned");
+      } else if (actual > expDate) {
+        inp.classList.add("late");
+      } else if (actual < expDate) {
+        inp.classList.add("early");
+      }
     }
   }
 }

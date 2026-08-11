@@ -175,6 +175,20 @@ main { padding: 20px 24px; }
   border-color: var(--red);
   box-shadow: 0 0 0 3px var(--red-light);
 }
+.estimator-field input.early {
+  background: #ECFDF5;
+  border-color: #6EE7B7;
+}
+.estimator-field input.late {
+  background: #FEF2F2;
+  border-color: #FCA5A5;
+}
+.estimator-field input.pinned {
+  background: #DC2626;
+  color: var(--white);
+  border-color: #991B1B;
+  font-weight: 600;
+}
 
 input[type="date"] {
   padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm);
