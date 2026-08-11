@@ -329,6 +329,7 @@ async function fetchAll() {
     const appDate = parseDate(item.application_date);
     item._id = item.source?.id || item.id;
     item._appDate = appDate;
+    item._updated = (item.source?.edited || item.source?.created || "");
     item._months = {};
     for (const col of COLUMNS) {
       if (!col.isDate) continue;
@@ -732,6 +733,11 @@ function init() {
     if (c.key === sortField) opt.selected = true;
     sortEl.appendChild(opt);
   }
+  const updOpt = document.createElement("option");
+  updOpt.value = "_updated";
+  updOpt.textContent = "Last updated";
+  if (sortField === "_updated") updOpt.selected = true;
+  sortEl.appendChild(updOpt);
 
   sortEl.addEventListener("change", () => {
     sortField = sortEl.value;
