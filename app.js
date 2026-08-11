@@ -332,22 +332,29 @@ function initTable() {
         const v = cell.getValue();
         if (!v || !v.length) return "—";
         const text = v.map(s => s.step + (s.date ? " (" + s.date + ")" : "")).join(", ");
-        return expandedExtra ? text : (text.length > 100 ? text.slice(0, 100) + "…" : text);
+        return expandedExtra ? text : (text.length > 90 ? text.slice(0, 90) + "…" : text);
       };
     } else if (c.key === "notes") {
       formatter = function(cell) {
         const v = cell.getValue();
         if (!v) return "—";
-        return expandedNotes ? v : (v.length > 80 ? v.slice(0, 80) + "…" : v);
+        return expandedNotes ? v : (v.length > 70 ? v.slice(0, 70) + "…" : v);
       };
     }
-    return {
+    const obj = {
       title: c.label + (c.isDate && avgs[c.key] != null ? ` · ${avgs[c.key]}d` : ""),
       field: c.key,
       sorter: "string",
       headerSort: false,
       formatter,
     };
+    if (c.key === "notes" || c.key === "extra_steps") {
+      obj.titleFormatter = function() {
+        const expanded = c.key === "notes" ? expandedNotes : expandedExtra;
+        return `<span>${c.label}</span> <span class="col-expand" data-col="${c.key}" style="cursor:pointer;opacity:0.6;font-size:0.8em">${expanded ? "→" : "←"}</span>`;
+      };
+    }
+    return obj;
   });
 
   table = new Tabulator("#table", {
@@ -552,18 +559,24 @@ function init() {
 
   document.getElementById("cols-btn").addEventListener("click", toggleColumnsPopup);
 
-  document.getElementById("expand-notes").addEventListener("click", () => {
-    expandedNotes = !expandedNotes;
-    document.getElementById("expand-notes").classList.toggle("checked", expandedNotes);
-    if (table) table.redraw(true);
-  });
-  document.getElementById("expand-extra").addEventListener("click", () => {
-    expandedExtra = !expandedExtra;
-    document.getElementById("expand-extra").classList.toggle("checked", expandedExtra);
-    if (table) table.redraw(true);
-  });
-
-  document.addEventListener("click", () => {
+  document.addEventListener("click", (e) => {
+    if (e.target.classList.contains("col-expand")) {
+      const col = e.target.dataset.col;
+      if (col === "notes") {
+        expandedNotes = !expandedNotes;
+        if (table) {
+          table.updateColumnDefinition("notes", { titleFormatter: table.getColumn("notes").definition.titleFormatter });
+          table.redraw(true);
+        }
+      } else if (col === "extra_steps") {
+        expandedExtra = !expandedExtra;
+        if (table) {
+          table.updateColumnDefinition("extra_steps", { titleFormatter: table.getColumn("extra_steps").definition.titleFormatter });
+          table.redraw(true);
+        }
+      }
+      return;
+    }
     document.getElementById("cols-popup").classList.remove("show");
     document.getElementById("loc-popup").classList.remove("show");
   });
