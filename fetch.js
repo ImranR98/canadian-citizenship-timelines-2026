@@ -57,7 +57,15 @@ async function scrape(threadUrl, cookie, limit) {
 
     const ac = new AbortController();
     const timer = setTimeout(() => ac.abort(), 30000);
-    const res = await fetch(url, { headers, signal: ac.signal });
+
+    let res;
+    for (let retry = 0; retry <= 2; retry++) {
+      res = await fetch(url, { headers, signal: ac.signal });
+      if (res.ok) break;
+      if (retry < 2 && (res.status === 429 || res.status >= 500)) {
+        await sleep(2000 * (retry + 1));
+      }
+    }
     clearTimeout(timer);
     if (!res.ok) {
       throw new Error(`Reddit returned ${res.status}`);

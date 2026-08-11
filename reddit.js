@@ -1,5 +1,6 @@
 "use strict";
 
+const { REDDIT_URL } = require("./config");
 const { prompt: callLLM } = require("./llm");
 const { scrape } = require("./fetch");
 const crypto = require("crypto");
@@ -242,9 +243,8 @@ function hashThread(commentNode) {
   return crypto.createHash("sha256").update(threadText).digest("hex");
 }
 
-function buildRetryPrompt(errors, systemPrompt, userPrompt) {
-  const feedback = `Your previous response was invalid. Errors:\n${errors.join(";\n")}\n\nPlease fix these issues and try again.\n\n`;
-  return { system: systemPrompt, user: feedback + userPrompt };
+function buildRetryPrompt(errors, userPrompt) {
+  return `Your previous response was invalid. Errors:\n${errors.join(";\n")}\n\nPlease fix these issues and try again.\n\n${userPrompt}`;
 }
 
 function validate(extracted) {
@@ -333,8 +333,8 @@ async function extractTimeline(commentNode, baseUrl, model, apiKey) {
     if (attempt === 0) {
       up = userPrompt;
     } else {
-      const retry = buildRetryPrompt(lastErrors, systemPrompt, userPrompt);
-      up = retry.user;
+      const retry = buildRetryPrompt(lastErrors, userPrompt);
+      up = retry;
     }
 
     const t0 = Date.now();
@@ -405,7 +405,6 @@ if (require.main === module) {
   }
 
   const RAW_OUTPUT = "data/comments_raw.json";
-  const URL = "https://www.reddit.com/r/ImmigrationCanada/comments/1q6vm0e/megathread_processing_times_citizenship_2026/";
   const COOKIE = process.env.REDDIT_COOKIE;
   const LLM_BASE_URL = process.env.LLM_BASE_URL;
   const LLM_MODEL = process.env.LLM_MODEL;
@@ -420,7 +419,7 @@ if (require.main === module) {
     } else {
       console.log("Scraping fresh...");
       const t0 = Date.now();
-      tree = await scrape(URL, COOKIE);
+      tree = await scrape(REDDIT_URL, COOKIE);
       console.log(`Scraped ${tree.length} comments in ${Date.now() - t0}ms`);
       fs.writeFileSync(RAW_OUTPUT, JSON.stringify(tree, null, 2));
     }

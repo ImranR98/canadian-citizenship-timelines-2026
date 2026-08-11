@@ -1,11 +1,11 @@
 "use strict";
 
+const { REDDIT_URL } = require("./config");
 const { scrape } = require("./fetch");
 const { extractTimeline, hashThread } = require("./reddit");
 const fs = require("fs");
 const path = require("path");
 
-const URL = "https://www.reddit.com/r/ImmigrationCanada/comments/1q6vm0e/megathread_processing_times_citizenship_2026/";
 const DATA_DIR = "data";
 const STATE_FILE = path.join(DATA_DIR, "state.json");
 const RAW_OUTPUT = path.join(DATA_DIR, "comments_raw.json");
@@ -39,7 +39,7 @@ async function run() {
   const state = loadState();
 
   console.log("Scraping Reddit comments...");
-  const tree = await scrape(URL, COOKIE);
+  const tree = await scrape(REDDIT_URL, COOKIE);
   console.log(`Scraped ${tree.length} top-level comments`);
 
   fs.writeFileSync(RAW_OUTPUT, JSON.stringify(tree, null, 2));

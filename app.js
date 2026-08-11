@@ -58,7 +58,14 @@ async function fetchAll() {
   } catch (e) {
     document.getElementById("loading-state").classList.add("hidden");
     errEl.classList.remove("hidden");
-    errEl.innerHTML = `<p>Failed to load data</p><p style="margin-top:8px;font-size:0.85rem">Run <code>node main.js</code> first to scrape and process comments.</p>`;
+    errEl.replaceChildren();
+    const p1 = document.createElement("p");
+    p1.textContent = "Failed to load data";
+    const p2 = document.createElement("p");
+    p2.style.cssText = "margin-top:8px;font-size:0.85rem";
+    p2.innerHTML = "Run <code>node main.js</code> first to scrape and process comments.";
+    errEl.appendChild(p1);
+    errEl.appendChild(p2);
     return;
   }
 
@@ -180,9 +187,21 @@ function updateStats(filteredItems) {
     { label: "LPP avg", value: avgs.lpp_date !== null ? `${avgs.lpp_date}mo` : "—" },
     { label: "Oath avg", value: avgs.oath_ceremony_date !== null ? `${avgs.oath_ceremony_date}mo` : "—" },
   ];
-  document.getElementById("stats-bar").innerHTML = stats.map(s =>
-    `<div class="stat-card"><div class="stat-value">${s.value}</div><div class="stat-label">${s.label}</div></div>`
-  ).join("");
+  const bar = document.getElementById("stats-bar");
+  bar.replaceChildren();
+  for (const s of stats) {
+    const card = document.createElement("div");
+    card.className = "stat-card";
+    const val = document.createElement("div");
+    val.className = "stat-value";
+    val.textContent = String(s.value);
+    const lbl = document.createElement("div");
+    lbl.className = "stat-label";
+    lbl.textContent = s.label;
+    card.appendChild(val);
+    card.appendChild(lbl);
+    bar.appendChild(card);
+  }
   document.getElementById("header-count").textContent = `${filteredItems.length} of ${allItems.length}`;
 }
 
@@ -347,9 +366,17 @@ function formatSourceThread(node, depth) {
 
 function renderColumnsPopup() {
   const popup = document.getElementById("cols-popup");
-  popup.innerHTML = COLUMNS.map(c => `
-    <label><input type="checkbox" ${visibleColumns.has(c.key) ? "checked" : ""} data-colid="${c.key}"> ${c.label}</label>
-  `).join("");
+  popup.replaceChildren();
+  for (const c of COLUMNS) {
+    const label = document.createElement("label");
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.checked = visibleColumns.has(c.key);
+    cb.dataset.colid = c.key;
+    label.appendChild(cb);
+    label.appendChild(document.createTextNode(" " + c.label));
+    popup.appendChild(label);
+  }
 
   popup.querySelectorAll("input").forEach(cb => {
     cb.addEventListener("change", () => {
@@ -385,9 +412,14 @@ function debounce(fn, ms) {
 
 function init() {
   const sortEl = document.getElementById("sort-field");
-  sortEl.innerHTML = COLUMNS.filter(c => c.isDate).map(c =>
-    `<option value="${c.key}" ${c.key === sortField ? "selected" : ""}>${c.label}</option>`
-  ).join("");
+  sortEl.replaceChildren();
+  for (const c of COLUMNS.filter(c => c.isDate)) {
+    const opt = document.createElement("option");
+    opt.value = c.key;
+    opt.textContent = c.label;
+    if (c.key === sortField) opt.selected = true;
+    sortEl.appendChild(opt);
+  }
 
   sortEl.addEventListener("change", () => {
     sortField = sortEl.value;
