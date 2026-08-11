@@ -518,7 +518,6 @@ function renderColumnsPopup() {
 function rebuildTable() {
   if (table) table.destroy();
   initTable();
-  addHeaderButtons();
 }
 
 function toggleColumnsPopup(e) {
