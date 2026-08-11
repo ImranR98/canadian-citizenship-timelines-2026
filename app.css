@@ -32,10 +32,9 @@ header {
 }
 header h1 { font-size: 1.15rem; font-weight: 700; }
 .btn-header {
-  background: rgba(255,255,255,0.15);
-  border-color: rgba(255,255,255,0.3);
-  color: var(--white);
-  font-size: 0.8rem;
+  background: rgba(255,255,255,0.15) !important;
+  border-color: rgba(255,255,255,0.3) !important;
+  color: var(--white) !important;
 }
 .btn-header:hover {
   background: rgba(255,255,255,0.25);
