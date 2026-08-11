@@ -363,33 +363,35 @@ function initTable() {
   });
 
   updateStats(filteredItems);
-  addHeaderButtons();
+  setTimeout(addHeaderButtons, 100);
 }
 
 function addHeaderButtons() {
   if (!table) return;
-  for (const key of ["notes", "extra_steps"]) {
+  const cols = table.getColumns();
+  for (const col of cols) {
+    const field = col.getField();
+    if (field !== "notes" && field !== "extra_steps") continue;
     try {
-      const col = table.getColumn(key);
-      if (!col) continue;
       const el = col.getElement();
       if (!el) continue;
       el.querySelector(".col-expand")?.remove();
+      const content = el.querySelector(".tabulator-col-content") || el.querySelector(".tabulator-col-title-holder") || el;
       const btn = document.createElement("span");
       btn.className = "col-expand";
-      const expanded = key === "notes" ? expandedNotes : expandedExtra;
+      const expanded = field === "notes" ? expandedNotes : expandedExtra;
       btn.textContent = expanded ? " «" : " »";
       btn.title = expanded ? "Collapse" : "Expand";
       btn.addEventListener("click", (e) => {
         e.stopPropagation();
         e.preventDefault();
-        if (key === "notes") expandedNotes = !expandedNotes;
+        if (field === "notes") expandedNotes = !expandedNotes;
         else expandedExtra = !expandedExtra;
         addHeaderButtons();
         table.redraw(true);
       });
-      el.querySelector(".tabulator-col-content")?.appendChild(btn);
-    } catch (_) {}
+      content.appendChild(btn);
+    } catch (e) { console.debug("Header button failed for", field, e.message); }
   }
 }
 
