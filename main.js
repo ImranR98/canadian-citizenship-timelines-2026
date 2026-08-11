@@ -115,6 +115,7 @@ server.listen(PORT, () => {
 let isRunning = false;
 let lastRunStart = 0;
 let lastCookieWarnDate = "";
+let lastSkipLog = 0;
 
 function checkCookieExpiry(cookie) {
   if (!cookie) return;
@@ -159,7 +160,10 @@ async function runSafe() {
       console.warn("Forcing stale scrape reset — previous run stuck >2h");
       isRunning = false;
     } else {
-      console.log("Skipping scrape — previous run still in progress");
+      if (Date.now() - lastSkipLog > 600000) {
+        console.log("Skipping scrape — previous run still in progress");
+        lastSkipLog = Date.now();
+      }
       return;
     }
   }
