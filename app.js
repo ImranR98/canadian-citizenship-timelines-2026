@@ -126,16 +126,15 @@ function computeEstimates() {
   }
 
   let currentStep = null;
-  let hasLaterFilled = false;
-  for (const f of DATE_FIELDS) {
-    if (!estimatorFilled[f] && !currentStep) {
-      currentStep = f;
+  for (let i = 0; i < DATE_FIELDS.length; i++) {
+    const f = DATE_FIELDS[i];
+    if (estimatorFilled[f]) continue;
+    let hasLater = false;
+    for (let j = i + 1; j < DATE_FIELDS.length; j++) {
+      if (estimatorFilled[DATE_FIELDS[j]]) { hasLater = true; break; }
     }
-    if (currentStep && estimatorFilled[f]) {
-      hasLaterFilled = true;
-    }
+    if (!hasLater) { currentStep = f; break; }
   }
-  if (hasLaterFilled) currentStep = null;
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
