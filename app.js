@@ -332,13 +332,13 @@ function initTable() {
         const v = cell.getValue();
         if (!v || !v.length) return "—";
         const text = v.map(s => s.step + (s.date ? " (" + s.date + ")" : "")).join(", ");
-        return expandedExtra ? text : (text.length > 90 ? text.slice(0, 90) + "…" : text);
+        return expandedExtra ? text : (text.length > 70 ? text.slice(0, 70) + "…" : text);
       };
     } else if (c.key === "notes") {
       formatter = function(cell) {
         const v = cell.getValue();
         if (!v) return "—";
-        return expandedNotes ? v : (v.length > 70 ? v.slice(0, 70) + "…" : v);
+        return expandedNotes ? v : (v.length > 50 ? v.slice(0, 50) + "…" : v);
       };
     }
     return {
