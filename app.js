@@ -24,6 +24,8 @@ let sortField = "application_date";
 let sortDir = "desc";
 let selectedId = null;
 let selectedLocations = new Set();
+let expandedNotes = false;
+let expandedExtra = false;
 
 function loadSettings() {
   try {
@@ -329,7 +331,14 @@ function initTable() {
       formatter = function(cell) {
         const v = cell.getValue();
         if (!v || !v.length) return "—";
-        return v.map(s => s.step + (s.date ? " (" + s.date + ")" : "")).join(", ");
+        const text = v.map(s => s.step + (s.date ? " (" + s.date + ")" : "")).join(", ");
+        return expandedExtra ? text : (text.length > 100 ? text.slice(0, 100) + "…" : text);
+      };
+    } else if (c.key === "notes") {
+      formatter = function(cell) {
+        const v = cell.getValue();
+        if (!v) return "—";
+        return expandedNotes ? v : (v.length > 80 ? v.slice(0, 80) + "…" : v);
       };
     }
     return {
@@ -542,6 +551,18 @@ function init() {
   document.getElementById("filter-to").addEventListener("input", d);
 
   document.getElementById("cols-btn").addEventListener("click", toggleColumnsPopup);
+
+  document.getElementById("expand-notes").addEventListener("click", () => {
+    expandedNotes = !expandedNotes;
+    document.getElementById("expand-notes").classList.toggle("checked", expandedNotes);
+    if (table) table.redraw(true);
+  });
+  document.getElementById("expand-extra").addEventListener("click", () => {
+    expandedExtra = !expandedExtra;
+    document.getElementById("expand-extra").classList.toggle("checked", expandedExtra);
+    if (table) table.redraw(true);
+  });
+
   document.addEventListener("click", () => {
     document.getElementById("cols-popup").classList.remove("show");
     document.getElementById("loc-popup").classList.remove("show");
