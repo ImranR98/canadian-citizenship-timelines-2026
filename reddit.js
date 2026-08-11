@@ -407,7 +407,7 @@ if (require.main === module) {
   const args = process.argv.slice(2);
   const showPrompt = args.includes("--show-prompt");
   const targetId = args.find(a => !a.startsWith("--")); if (!targetId) {
-    console.error("Usage: node prompt.js [--show-prompt] <comment_id>");
+    console.error("Usage: node reddit.js [--show-prompt] <comment_id>");
     process.exit(1);
   }
 

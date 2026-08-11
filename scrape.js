@@ -90,7 +90,8 @@ async function run() {
         case "processed":
           state[result.id] = { status: "processed", hash };
           const output = Object.assign({}, result.parsed, { source: comment });
-          fs.writeFileSync(path.join(DATA_DIR, `${result.id}.json`), JSON.stringify(output, null, 2));
+          const safeId = /^[a-z0-9]+$/i.test(result.id) ? result.id : "unknown";
+          fs.writeFileSync(path.join(DATA_DIR, `${safeId}.json`), JSON.stringify(output, null, 2));
           saveState(state);
           processed++;
           console.log(`[${result.id}] processed`);

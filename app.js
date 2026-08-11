@@ -31,7 +31,7 @@ let sortDir = "desc";
 let selectedId = null;
 
 function loadColumns() {
-  try { const s = localStorage.getItem("columns"); if (s) visibleColumns = new Set(JSON.parse(s));   } catch (e) { console.debug("last_scrape fetch failed:", e.message); }
+  try { const s = localStorage.getItem("columns"); if (s) visibleColumns = new Set(JSON.parse(s)); } catch (e) { console.debug("Failed to load column preferences:", e.message); }
 }
 function saveColumns() { localStorage.setItem("columns", JSON.stringify([...visibleColumns])); }
 loadColumns();
@@ -39,7 +39,7 @@ loadColumns();
 function parseDate(s) {
   if (!s) return null;
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
-  return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null;
+  return m ? new Date(s + "T00:00:00Z") : null;
 }
 
 function monthsBetween(d1, d2) {
@@ -76,10 +76,13 @@ async function fetchAll() {
   const batchSize = 10;
   for (let i = 0; i < ids.length; i += batchSize) {
     const batch = ids.slice(i, i + batchSize);
-    const results = await Promise.all(batch.map(id =>
-      fetch(`data/${id}.json`).then(r => r.json())
+    const results = await Promise.allSettled(batch.map(id =>
+      fetch(`data/${id}.json`).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
     ));
-    items.push(...results);
+    for (const r of results) {
+      if (r.status === "fulfilled") items.push(r.value);
+      else console.warn("Failed to load data item:", r.reason?.message || r.reason);
+    }
   }
 
   allItems = items.map(item => {
@@ -108,7 +111,7 @@ async function fetchLastScrape() {
     const d = new Date(time);
     document.getElementById("last-scrape").textContent =
       `Last scraped ${d.toLocaleDateString()} ${d.toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}`;
-  } catch (e) { console.debug("localStorage load failed:", e.message); }
+  } catch (e) { console.debug("Failed to load last scrape time:", e.message); }
 }
 
 function getFiltered() {

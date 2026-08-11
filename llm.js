@@ -11,8 +11,9 @@ async function prompt(systemText, userText, baseUrl, model, apiKey) {
     { role: "user", content: userText }
   ];
 
+  const url = baseUrl.replace(/\/+$/, "") + "/chat/completions";
   const fetchStart = Date.now();
-  const res = await fetch(`${baseUrl}/chat/completions`, {
+  const res = await fetch(url, {
     method: "POST",
     headers,
     body: JSON.stringify({ model, messages })
@@ -24,6 +25,9 @@ async function prompt(systemText, userText, baseUrl, model, apiKey) {
   }
 
   const json = await res.json();
+  if (!json.choices || !json.choices.length) {
+    throw new Error("LLM returned empty choices array");
+  }
   const totalMs = Date.now() - fetchStart;
   const content = json.choices[0].message.content;
   console.error(`fetch:${fetchMs}ms total:${totalMs}ms total_chars:${systemText.length + userText.length} resp:${content.length}chars`);

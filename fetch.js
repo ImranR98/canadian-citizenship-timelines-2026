@@ -29,7 +29,7 @@ function buildTree(children) {
 }
 
 async function scrape(threadUrl, cookie, limit) {
-  limit = limit || 1500;
+  limit = limit ?? 1500;
   const base = threadUrl.replace(/\/?$/, "/") + ".json";
 
   const targetHost = new URL(base).hostname;

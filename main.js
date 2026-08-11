@@ -82,7 +82,8 @@ const server = http.createServer((req, res) => {
   if (rawUrl === "/") {
     filePath = path.join(ROOT, "index.html");
   } else if (rawUrl.startsWith("/data/")) {
-    filePath = path.join(ROOT, rawUrl);
+    const sanitized = rawUrl.replace(/\.\.\//g, "");
+    filePath = path.join(ROOT, sanitized);
   } else {
     const sanitized = rawUrl.replace(/^\//, "").replace(/\.\.\//g, "");
     filePath = path.join(ROOT, sanitized);
@@ -114,6 +115,8 @@ let isRunning = false;
 
 function checkCookieExpiry(cookie) {
   if (!cookie) return;
+  let minDaysLeft = Infinity;
+  let found = false;
   for (const tokenName of ["reddit_session", "token_v2"]) {
     const idx = cookie.indexOf(tokenName + "=");
     if (idx === -1) continue;
@@ -124,14 +127,15 @@ function checkCookieExpiry(cookie) {
       const payload = JSON.parse(Buffer.from(value.split(".")[1], "base64url").toString());
       if (payload.exp) {
         const daysLeft = Math.round((payload.exp * 1000 - Date.now()) / 86400000);
-        if (daysLeft <= 7) {
-          const msg = `Reddit cookie expires in ${daysLeft} day(s). Refresh it soon.`;
-          console.warn(`!!! ${msg}`);
-          notify(NTFY_URL, msg, { title: "CCT26 cookie expiring", priority: daysLeft <= 2 ? 5 : 4, tags: "warning", auth: NTFY_AUTH });
-        }
-        return daysLeft;
+        if (daysLeft < minDaysLeft) minDaysLeft = daysLeft;
+        found = true;
       }
     } catch (_) {}
+  }
+  if (found && minDaysLeft <= 7) {
+    const msg = `Reddit cookie expires in ${minDaysLeft} day(s). Refresh it soon.`;
+    console.warn(`!!! ${msg}`);
+    notify(NTFY_URL, msg, { title: "CCT26 cookie expiring", priority: minDaysLeft <= 2 ? 5 : 4, tags: "warning", auth: NTFY_AUTH });
   }
 }
 
@@ -156,7 +160,7 @@ async function runSafe() {
     saveLastScrape();
   } catch (err) {
     console.error("Scrape run failed:", err.message);
-    saveLastScrape();
+    try { saveLastScrape(); } catch (e) { console.error("Failed to save last scrape:", e.message); }
     notify(NTFY_URL, `Scrape run failed: ${err.message}`, { title: "CCT26 error", priority: 4, tags: "warning", auth: NTFY_AUTH });
     isRunning = false;
     return;
