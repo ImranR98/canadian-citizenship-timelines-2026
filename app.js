@@ -167,7 +167,7 @@ function applyEstimator() {
     }
 
     const expDate = expectations[step];
-    if (expDate && actual) {
+    if (expDate && actual && step !== "application_date") {
       if (pinned[step]) {
         inp.classList.add("pinned");
       } else if (actual > expDate) {
