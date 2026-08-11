@@ -179,15 +179,20 @@ function applyEstimator() {
       continue;
     }
 
+    inp.title = "";
     const expDate = expectations[step];
-    if (expDate && actual && step !== "application_date") {
-      if (pinned[step] && step === currentStep) {
-        inp.classList.add("pinned");
-      } else if (actual > expDate) {
-        inp.classList.add("late");
-      } else if (actual < expDate) {
-        inp.classList.add("early");
-      }
+    if (step === "application_date") {
+      inp.title = "Application date — the starting point for all estimates";
+    } else if (estimatorFilled[step] && expDate) {
+      const d = daysBetween(new Date(expDate + "T00:00:00Z"), new Date(actual + "T00:00:00Z"));
+      if (d > 0) inp.title = `Expected: ${expDate} (${d} days later than average)`;
+      else if (d < 0) inp.title = `Expected: ${expDate} (${-d} days earlier than average)`;
+      else inp.title = `Expected: ${expDate} (exactly on average)`;
+    } else if (pinned[step] && step === currentStep) {
+      inp.title = `Estimate pinned to today — waiting longer than the filtered average`;
+      inp.classList.add("pinned");
+    } else if (estimates[step]) {
+      inp.title = "Estimated from filtered averages";
     }
   }
 }
