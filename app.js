@@ -124,9 +124,7 @@ function populateLocations() {
     cb.checked = selectedLocations.has(loc);
     label.appendChild(cb);
     label.appendChild(document.createTextNode(" " + loc));
-    label.addEventListener("click", (e) => {
-      e.stopPropagation();
-      cb.checked = !cb.checked;
+    cb.addEventListener("change", () => {
       if (cb.checked) selectedLocations.add(loc);
       else selectedLocations.delete(loc);
       updateLocButton();
