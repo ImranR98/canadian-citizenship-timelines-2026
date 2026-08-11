@@ -249,6 +249,7 @@ button { cursor: pointer; font-size: 0.82rem; font-weight: 500; }
 }
 .modal-header button:hover { background: var(--bg); color: var(--red); }
 .modal-body { padding: 20px; font-size: 0.9rem; line-height: 1.6; }
+.modal-body p { margin-bottom: 12px; }
 .modal-body a { color: var(--red); text-decoration: none; }
 .modal-body a:hover { text-decoration: underline; }
 
