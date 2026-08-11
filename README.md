@@ -2,6 +2,8 @@
 
 Scrapes r/ImmigrationCanada citizenship timeline comments, extracts structured data via an LLM, and serves an interactive dashboard.
 
+![Screenshot](./screenshot.png)
+
 ## Setup
 
 **Requirements:** Node.js >= 18, a Reddit account cookie, and an OpenAI-compatible LLM API endpoint.
