@@ -306,17 +306,23 @@ function updateColumnHeaders(avgs) {
 }
 
 function refreshTable() {
-  const filteredItems = getFiltered();
-  const avgs = computeAverages(filteredItems);
+  const card = document.getElementById("filter-card");
+  card.classList.add("busy");
+  try {
+    const filteredItems = getFiltered();
+    const avgs = computeAverages(filteredItems);
 
-  updateStats(filteredItems);
-  updateColumnHeaders(avgs);
+    updateStats(filteredItems);
+    updateColumnHeaders(avgs);
 
-  if (table) {
-    table.replaceData(filteredItems);
-    table.setSort(sortField, sortDir);
+    if (table) {
+      table.replaceData(filteredItems);
+      table.setSort(sortField, sortDir);
+    }
+    saveSettings();
+  } finally {
+    card.classList.remove("busy");
   }
-  saveSettings();
 }
 
 function initTable() {
