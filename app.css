@@ -255,3 +255,14 @@ footer a:hover { color: var(--red); }
 @media (max-width: 960px) {
   #detail-panel { position: fixed; top: 0; right: 0; width: 100%; max-width: 420px; height: 100vh; max-height: 100vh; z-index: 200; }
 }
+
+@media (max-width: 780px) {
+  #filter-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .filter-right {
+    align-items: flex-start;
+    padding-bottom: 0;
+  }
+}
