@@ -341,20 +341,13 @@ function initTable() {
         return expandedNotes ? v : (v.length > 70 ? v.slice(0, 70) + "…" : v);
       };
     }
-    const obj = {
+    return {
       title: c.label + (c.isDate && avgs[c.key] != null ? ` · ${avgs[c.key]}d` : ""),
       field: c.key,
       sorter: "string",
       headerSort: false,
       formatter,
     };
-    if (c.key === "notes" || c.key === "extra_steps") {
-      obj.titleFormatter = function() {
-        const expanded = c.key === "notes" ? expandedNotes : expandedExtra;
-        return `<span>${c.label}</span> <span class="col-expand" data-col="${c.key}" style="cursor:pointer;opacity:0.6;font-size:0.8em">${expanded ? "→" : "←"}</span>`;
-      };
-    }
-    return obj;
   });
 
   table = new Tabulator("#table", {
@@ -370,6 +363,34 @@ function initTable() {
   });
 
   updateStats(filteredItems);
+  addHeaderButtons();
+}
+
+function addHeaderButtons() {
+  if (!table) return;
+  for (const key of ["notes", "extra_steps"]) {
+    try {
+      const col = table.getColumn(key);
+      if (!col) continue;
+      const el = col.getElement();
+      if (!el) continue;
+      el.querySelector(".col-expand")?.remove();
+      const btn = document.createElement("span");
+      btn.className = "col-expand";
+      const expanded = key === "notes" ? expandedNotes : expandedExtra;
+      btn.textContent = expanded ? " «" : " »";
+      btn.title = expanded ? "Collapse" : "Expand";
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        if (key === "notes") expandedNotes = !expandedNotes;
+        else expandedExtra = !expandedExtra;
+        addHeaderButtons();
+        table.redraw(true);
+      });
+      el.querySelector(".tabulator-col-content")?.appendChild(btn);
+    } catch (_) {}
+  }
 }
 
 function selectItem(item) {
@@ -495,6 +516,7 @@ function renderColumnsPopup() {
 function rebuildTable() {
   if (table) table.destroy();
   initTable();
+  addHeaderButtons();
 }
 
 function toggleColumnsPopup(e) {
@@ -558,25 +580,7 @@ function init() {
   document.getElementById("filter-to").addEventListener("input", d);
 
   document.getElementById("cols-btn").addEventListener("click", toggleColumnsPopup);
-
-  document.addEventListener("click", (e) => {
-    if (e.target.classList.contains("col-expand")) {
-      const col = e.target.dataset.col;
-      if (col === "notes") {
-        expandedNotes = !expandedNotes;
-        if (table) {
-          table.updateColumnDefinition("notes", { titleFormatter: table.getColumn("notes").definition.titleFormatter });
-          table.redraw(true);
-        }
-      } else if (col === "extra_steps") {
-        expandedExtra = !expandedExtra;
-        if (table) {
-          table.updateColumnDefinition("extra_steps", { titleFormatter: table.getColumn("extra_steps").definition.titleFormatter });
-          table.redraw(true);
-        }
-      }
-      return;
-    }
+  document.addEventListener("click", () => {
     document.getElementById("cols-popup").classList.remove("show");
     document.getElementById("loc-popup").classList.remove("show");
   });
