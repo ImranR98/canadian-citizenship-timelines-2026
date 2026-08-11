@@ -113,6 +113,8 @@ server.listen(PORT, () => {
 });
 
 let isRunning = false;
+let lastRunStart = 0;
+let lastCookieWarnDate = "";
 
 function checkCookieExpiry(cookie) {
   if (!cookie) return;
@@ -134,6 +136,9 @@ function checkCookieExpiry(cookie) {
     } catch (_) {}
   }
   if (found && minDaysLeft <= 7) {
+    const today = new Date().toISOString().slice(0, 10);
+    if (today === lastCookieWarnDate) return;
+    lastCookieWarnDate = today;
     const msg = `Reddit cookie expires in ${minDaysLeft} day(s). Refresh it soon.`;
     console.warn(`!!! ${msg}`);
     notify(NTFY_URL, msg, { title: "CCT26 cookie expiring", priority: minDaysLeft <= 2 ? 5 : 4, tags: "warning", auth: NTFY_AUTH });
@@ -150,10 +155,16 @@ async function runSafe() {
   checkCookieExpiry(process.env.REDDIT_COOKIE);
 
   if (isRunning) {
-    console.log("Skipping scrape — previous run still in progress");
-    return;
+    if (Date.now() - lastRunStart > 7200000) {
+      console.warn("Forcing stale scrape reset — previous run stuck >2h");
+      isRunning = false;
+    } else {
+      console.log("Skipping scrape — previous run still in progress");
+      return;
+    }
   }
   isRunning = true;
+  lastRunStart = Date.now();
 
   let summary;
   try {
