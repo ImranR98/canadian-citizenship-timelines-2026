@@ -25,11 +25,60 @@ let sortDir = "desc";
 let selectedId = null;
 let selectedLocations = new Set();
 
-function loadColumns() {
-  try { const s = localStorage.getItem("columns"); if (s) visibleColumns = new Set(JSON.parse(s)); } catch (e) { console.debug("Failed to load column preferences:", e.message); }
+function loadSettings() {
+  try {
+    const s = JSON.parse(localStorage.getItem("settings"));
+    if (!s) return;
+    if (s.columns) visibleColumns = new Set(s.columns);
+    if (s.sortField) sortField = s.sortField;
+    if (s.sortDir) sortDir = s.sortDir;
+    if (s.locations) selectedLocations = new Set(s.locations);
+    if (s.stages) {
+      for (const [field, on] of Object.entries(s.stages)) {
+        if (on) {
+          setTimeout(() => {
+            const el = document.querySelector(`.filter-check[data-field="${field}"]`);
+            if (el) el.classList.add("checked");
+          }, 0);
+        }
+      }
+    }
+    if (s.missingDate) {
+      setTimeout(() => {
+        const el = document.querySelector(`.filter-check[data-field="_missing_date"]`);
+        if (el) el.classList.add("checked");
+      }, 0);
+    }
+    if (s.from) {
+      setTimeout(() => { document.getElementById("filter-from").value = s.from; }, 0);
+    }
+    if (s.to) {
+      setTimeout(() => { document.getElementById("filter-to").value = s.to; }, 0);
+    }
+  } catch (e) { console.debug("Failed to load settings:", e.message); }
 }
-function saveColumns() { localStorage.setItem("columns", JSON.stringify([...visibleColumns])); }
-loadColumns();
+
+function saveSettings() {
+  const stages = {};
+  document.querySelectorAll(".filter-check").forEach(el => {
+    if (el.dataset.field !== "_missing_date") {
+      stages[el.dataset.field] = el.classList.contains("checked");
+    }
+  });
+  const missingDate = document.querySelector(`.filter-check[data-field="_missing_date"]`)?.classList.contains("checked") || false;
+  const settings = {
+    columns: [...visibleColumns],
+    sortField,
+    sortDir,
+    locations: [...selectedLocations],
+    stages,
+    missingDate,
+    from: document.getElementById("filter-from").value,
+    to: document.getElementById("filter-to").value,
+  };
+  localStorage.setItem("settings", JSON.stringify(settings));
+}
+loadSettings();
 
 function parseDate(s) {
   if (!s) return null;
@@ -265,6 +314,7 @@ function refreshTable() {
     table.replaceData(filteredItems);
     table.setSort(sortField, sortDir);
   }
+  saveSettings();
 }
 
 function initTable() {
@@ -420,7 +470,7 @@ function renderColumnsPopup() {
     cb.addEventListener("change", () => {
       if (cb.checked) visibleColumns.add(cb.dataset.colid);
       else visibleColumns.delete(cb.dataset.colid);
-      saveColumns();
+      saveSettings();
       rebuildTable();
     });
   });
