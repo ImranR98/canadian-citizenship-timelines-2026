@@ -354,7 +354,7 @@ function initTable() {
     data: filteredItems,
     columns: cols,
     layout: "fitDataFill",
-    height: "calc(100vh - 320px)",
+    height: "calc(100vh - 280px)",
     movableColumns: false,
     selectable: 1,
     rowClick: function(e, row) { selectItem(row.getData()); },
