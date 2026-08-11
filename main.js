@@ -119,30 +119,26 @@ let lastSkipLog = 0;
 
 function checkCookieExpiry(cookie) {
   if (!cookie) return;
-  let minDaysLeft = Infinity;
-  let found = false;
-  for (const tokenName of ["reddit_session", "token_v2"]) {
-    const idx = cookie.indexOf(tokenName + "=");
-    if (idx === -1) continue;
-    const start = idx + tokenName.length + 1;
+  let daysLeft = null;
+  const idx = cookie.indexOf("reddit_session=");
+  if (idx !== -1) {
+    const start = idx + "reddit_session=".length;
     const end = cookie.indexOf(";", start);
     const value = end === -1 ? cookie.slice(start) : cookie.slice(start, end);
     try {
       const payload = JSON.parse(Buffer.from(value.split(".")[1], "base64url").toString());
       if (payload.exp) {
-        const daysLeft = Math.round((payload.exp * 1000 - Date.now()) / 86400000);
-        if (daysLeft < minDaysLeft) minDaysLeft = daysLeft;
-        found = true;
+        daysLeft = Math.round((payload.exp * 1000 - Date.now()) / 86400000);
       }
     } catch (_) {}
   }
-  if (found && minDaysLeft <= 7) {
+  if (daysLeft !== null && daysLeft <= 7) {
     const today = new Date().toISOString().slice(0, 10);
     if (today === lastCookieWarnDate) return;
     lastCookieWarnDate = today;
-    const msg = `Reddit cookie expires in ${minDaysLeft} day(s). Refresh it soon.`;
+    const msg = `Reddit cookie expires in ${daysLeft} day(s). Refresh it soon.`;
     console.warn(`!!! ${msg}`);
-    notify(NTFY_URL, msg, { title: "CCT26 cookie expiring", priority: minDaysLeft <= 2 ? 5 : 4, tags: "warning", auth: NTFY_AUTH });
+    notify(NTFY_URL, msg, { title: "CCT26 cookie expiring", priority: daysLeft <= 2 ? 5 : 4, tags: "warning", auth: NTFY_AUTH });
   }
 }
 
