@@ -180,11 +180,10 @@ button { cursor: pointer; font-size: 0.82rem; font-weight: 500; }
   font-weight: 600; font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.03em;
 }
 .tabulator .tabulator-header .tabulator-col:hover { background: rgba(255,255,255,0.1) !important; }
-.tabulator .tabulator-header .tabulator-col .tabulator-col-content { padding: 10px 12px; }
+.tabulator .tabulator-header .tabulator-col .tabulator-col-content { padding: 8px 12px; position: relative; }
 .col-expand {
   cursor: pointer; opacity: 0.7; font-size: 1.1em; line-height: 1;
-  display: inline-block; vertical-align: middle; user-select: none;
-  float: right;
+  user-select: none; position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
 }
 .col-expand:hover { opacity: 1; }
 .tabulator .tabulator-header .tabulator-arrow { border-bottom-color: var(--white) !important; }
