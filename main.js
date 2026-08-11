@@ -17,7 +17,7 @@ const { run } = require("./scrape");
 const { send: notify } = require("./notify");
 
 const PORT = parseInt(process.env.PORT, 10) || 3000;
-const intervalHours = parseFloat(process.env.SCRAPE_INTERVAL_HOURS) ?? 24;
+const intervalHours = process.env.SCRAPE_INTERVAL_HOURS === undefined ? 24 : parseFloat(process.env.SCRAPE_INTERVAL_HOURS);
 const INTERVAL_MS = Math.max(0.1, intervalHours) * 3600000;
 const NTFY_URL = process.env.NTFY_URL;
 const NTFY_AUTH = process.env.NTFY_AUTH;
