@@ -182,8 +182,9 @@ button { cursor: pointer; font-size: 0.82rem; font-weight: 500; }
 .tabulator .tabulator-header .tabulator-col:hover { background: rgba(255,255,255,0.1) !important; }
 .tabulator .tabulator-header .tabulator-col .tabulator-col-content { padding: 10px 12px; }
 .col-expand {
-  cursor: pointer; opacity: 0.7; margin-left: 4px; font-size: 1.1em; line-height: 1;
+  cursor: pointer; opacity: 0.7; font-size: 1.1em; line-height: 1;
   display: inline-block; vertical-align: middle; user-select: none;
+  float: right;
 }
 .col-expand:hover { opacity: 1; }
 .tabulator .tabulator-header .tabulator-arrow { border-bottom-color: var(--white) !important; }
