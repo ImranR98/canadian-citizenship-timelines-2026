@@ -305,24 +305,31 @@ function updateColumnHeaders(avgs) {
   }
 }
 
-function refreshTable() {
+function refreshTable(dataChanged) {
+  if (dataChanged === undefined) dataChanged = true;
   const card = document.getElementById("filter-card");
   card.classList.add("busy");
-  try {
-    const filteredItems = getFiltered();
-    const avgs = computeAverages(filteredItems);
-
-    updateStats(filteredItems);
-    updateColumnHeaders(avgs);
-
-    if (table) {
-      table.replaceData(filteredItems);
-      table.setSort(sortField, sortDir);
-    }
-    saveSettings();
-  } finally {
-    card.classList.remove("busy");
-  }
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      try {
+        const filteredItems = getFiltered();
+        const avgs = computeAverages(filteredItems);
+        updateStats(filteredItems);
+        updateColumnHeaders(avgs);
+        if (table) {
+          if (dataChanged) {
+            table.setData(filteredItems);
+            table.setSort(sortField, sortDir);
+          } else {
+            table.setSort(sortField, sortDir);
+          }
+        }
+        saveSettings();
+      } finally {
+        card.classList.remove("busy");
+      }
+    });
+  });
 }
 
 function initTable() {
@@ -538,13 +545,13 @@ function init() {
 
   sortEl.addEventListener("change", () => {
     sortField = sortEl.value;
-    refreshTable();
+    refreshTable(false);
   });
 
   document.getElementById("sort-dir").addEventListener("click", () => {
     sortDir = sortDir === "asc" ? "desc" : "asc";
     document.getElementById("sort-dir").textContent = sortDir === "asc" ? "Oldest first" : "Newest first";
-    refreshTable();
+    refreshTable(false);
   });
 
   document.getElementById("clear-btn").addEventListener("click", () => {
