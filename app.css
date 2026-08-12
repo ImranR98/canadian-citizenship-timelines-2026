@@ -194,11 +194,12 @@ main { padding: 20px 24px; }
   font-weight: 600;
 }
 
-input[type="date"] {
+.date-input {
   padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm);
   font-size: 0.84rem; background: var(--white);
+  font-family: "SF Mono", "Fira Code", monospace;
 }
-input[type="date"]:focus { outline: none; border-color: var(--red); box-shadow: 0 0 0 3px var(--red-light); }
+.date-input:focus { outline: none; border-color: var(--red); box-shadow: 0 0 0 3px var(--red-light); }
 
 .filter-check {
   display: flex; align-items: center; gap: 4px; font-size: 0.8rem; cursor: pointer;

@@ -160,7 +160,7 @@ function computeEstimates() {
 
 function applyEstimator() {
   const { estimates, expectations, pinned, currentStep } = computeEstimates();
-  const inputs = document.querySelectorAll("#estimator-card input[type=date]");
+  const inputs = document.querySelectorAll("#estimator-card .date-input");
   for (const inp of inputs) {
     const step = inp.dataset.step;
     let actual;
@@ -253,7 +253,7 @@ function initEstimator() {
     });
   });
 
-  document.querySelectorAll("#estimator-card input[type=date]").forEach(inp => {
+  document.querySelectorAll("#estimator-card .date-input").forEach(inp => {
     inp.addEventListener("change", () => {
       const step = inp.dataset.step;
       if (inp.value && /^\d{4}-\d{2}-\d{2}$/.test(inp.value)) {
