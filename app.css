@@ -156,50 +156,68 @@ main { padding: 20px 24px; }
   color: var(--text-secondary);
   margin-bottom: 2px;
 }
-.estimator-field input {
+.date-picker-wrap {
+  position: relative;
+  display: inline-block;
+}
+.estimator-field .date-picker-wrap { display: block; }
+.date-picker-wrap input[type=date] {
+  position: absolute;
+  inset: 0;
   width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  border: none;
+  padding: 0;
+  margin: 0;
+  z-index: 2;
+}
+.date-picker-display {
+  display: inline-block;
+  width: 100%;
+  box-sizing: border-box;
   padding: 5px 8px;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   font-size: 0.84rem;
+  background: var(--white);
+  color: var(--text);
+  font-family: "SF Mono", "Fira Code", monospace;
+  white-space: nowrap;
 }
-.estimator-field input.estimated {
+.date-picker-display.placeholder {
+  color: var(--text-secondary);
+}
+.date-picker-wrap:focus-within .date-picker-display {
+  border-color: var(--red);
+  box-shadow: 0 0 0 3px var(--red-light);
+}
+.date-picker-wrap input.estimated ~ .date-picker-display {
   background: #F3F4F6;
   color: var(--text-secondary);
   font-style: italic;
   border-style: dashed;
 }
-.estimator-field input.user-filled {
+.date-picker-wrap input.user-filled ~ .date-picker-display {
   background: var(--white);
   color: var(--text);
   font-style: normal;
 }
-.estimator-field input:focus {
-  outline: none;
-  border-color: var(--red);
-  box-shadow: 0 0 0 3px var(--red-light);
-}
-.estimator-field input.early {
+.date-picker-wrap input.early ~ .date-picker-display {
   background: #ECFDF5;
   border-color: #6EE7B7;
 }
-.estimator-field input.late {
+.date-picker-wrap input.late ~ .date-picker-display {
   background: #FEF2F2;
   border-color: #FCA5A5;
 }
-.estimator-field input.pinned {
+.date-picker-wrap input.pinned ~ .date-picker-display {
   background: #DC2626;
   color: var(--white);
   border-color: #991B1B;
   font-weight: 600;
 }
-
-.date-input {
-  padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm);
-  font-size: 0.84rem; background: var(--white);
-  font-family: "SF Mono", "Fira Code", monospace;
-}
-.date-input:focus { outline: none; border-color: var(--red); box-shadow: 0 0 0 3px var(--red-light); }
 
 .filter-check {
   display: flex; align-items: center; gap: 4px; font-size: 0.8rem; cursor: pointer;

@@ -38,6 +38,33 @@ const ESTIMATOR_KEYS = {
   oc: "oath_ceremony_date"
 };
 
+function upgradeDateInputs() {
+  document.querySelectorAll("input.date-input[type=date]").forEach(inp => {
+    if (inp.parentElement.classList.contains("date-picker-wrap")) return;
+    const wrap = document.createElement("span");
+    wrap.className = "date-picker-wrap";
+    inp.parentNode.insertBefore(wrap, inp);
+    wrap.appendChild(inp);
+    const disp = document.createElement("span");
+    disp.className = "date-picker-display";
+    wrap.appendChild(disp);
+    const sync = () => {
+      disp.textContent = inp.value || (inp.placeholder || "yyyy-mm-dd");
+      disp.classList.toggle("placeholder", !inp.value);
+    };
+    inp.addEventListener("input", sync);
+    inp.addEventListener("change", sync);
+    inp.syncDateDisplay = sync;
+    sync();
+  });
+}
+
+function syncAllDateDisplays() {
+  document.querySelectorAll("input.date-input[type=date]").forEach(inp => {
+    if (inp.syncDateDisplay) inp.syncDateDisplay();
+  });
+}
+
 function parseQueryParams() {
   const p = new URLSearchParams(window.location.search);
   estimatorFilled = {};
@@ -195,6 +222,7 @@ function applyEstimator() {
       inp.title = "Estimated from filtered averages";
     }
   }
+  syncAllDateDisplays();
 }
 
 function buildUrl() {
@@ -858,6 +886,7 @@ function init() {
   });
 
   renderColumnsPopup();
+  upgradeDateInputs();
   initEstimator();
   fetchAll();
 }
