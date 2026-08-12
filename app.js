@@ -450,8 +450,9 @@ async function fetchLastScrape() {
     if (!r.ok) return;
     const { time } = await r.json();
     const d = new Date(time);
-    document.getElementById("last-scrape").textContent =
-      `Last scraped ${d.toLocaleDateString()} ${d.toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}`;
+    const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const timeStr = `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+    document.getElementById("last-scrape").textContent = `Last scraped ${dateStr} ${timeStr}`;
   } catch (e) { console.debug("Failed to load last scrape time:", e.message); }
 }
 
