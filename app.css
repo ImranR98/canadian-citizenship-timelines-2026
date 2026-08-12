@@ -136,10 +136,11 @@ main { padding: 20px 24px; }
 .estimator-header {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 10px;
   margin-bottom: 10px;
 }
-.estimator-header .btn { font-size: 0.78rem; }
+.estimator-header .btn { font-size: 0.78rem; white-space: nowrap; }
 #estimator-collapse { margin-left: auto; padding: 2px 6px; }
 .estimator-grid {
   display: grid;
