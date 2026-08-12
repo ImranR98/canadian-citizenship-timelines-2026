@@ -156,28 +156,20 @@ main { padding: 20px 24px; }
   color: var(--text-secondary);
   margin-bottom: 2px;
 }
-.estimator-field input {
-  width: 100%;
-  padding: 5px 8px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  font-size: 0.84rem;
-}
 .estimator-field input.estimated {
   background: #F3F4F6;
+  border-style: dashed;
+}
+.estimator-field input.estimated ~ .date-picker-display {
   color: var(--text-secondary);
   font-style: italic;
-  border-style: dashed;
 }
 .estimator-field input.user-filled {
   background: var(--white);
+}
+.estimator-field input.user-filled ~ .date-picker-display {
   color: var(--text);
   font-style: normal;
-}
-.estimator-field input:focus {
-  outline: none;
-  border-color: var(--red);
-  box-shadow: 0 0 0 3px var(--red-light);
 }
 .estimator-field input.early {
   background: #ECFDF5;
@@ -189,16 +181,46 @@ main { padding: 20px 24px; }
 }
 .estimator-field input.pinned {
   background: #DC2626;
-  color: var(--white);
   border-color: #991B1B;
+}
+.estimator-field input.pinned ~ .date-picker-display {
+  color: var(--white);
   font-weight: 600;
 }
 
-input[type="date"] {
+.date-input {
   padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm);
   font-size: 0.84rem; background: var(--white);
+  font-family: "SF Mono", "Fira Code", monospace;
+  width: 150px;
+  color: transparent;
 }
-input[type="date"]:focus { outline: none; border-color: var(--red); box-shadow: 0 0 0 3px var(--red-light); }
+.estimator-field .date-input { width: 100%; }
+.date-input::-webkit-datetime-edit { color: transparent; }
+.date-input:focus { outline: none; border-color: var(--red); box-shadow: 0 0 0 3px var(--red-light); }
+
+.date-picker-wrap {
+  position: relative;
+  display: inline-block;
+}
+.estimator-field .date-picker-wrap { display: block; }
+.date-picker-wrap .date-input { width: 100%; box-sizing: border-box; }
+.date-picker-display {
+  position: absolute;
+  top: 0;
+  left: 0;
+  font-family: "SF Mono", "Fira Code", monospace;
+  white-space: nowrap;
+  pointer-events: none;
+  color: var(--text);
+}
+.date-picker-display.placeholder { color: var(--text-secondary); }
+
+.date-picker-wrap:focus-within .date-input,
+.date-picker-wrap:focus-within .date-input::-webkit-datetime-edit {
+  color: var(--text);
+}
+.date-picker-wrap:focus-within .date-picker-display { display: none; }
 
 .filter-check {
   display: flex; align-items: center; gap: 4px; font-size: 0.8rem; cursor: pointer;

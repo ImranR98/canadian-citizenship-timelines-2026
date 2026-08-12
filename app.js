@@ -45,8 +45,8 @@ function parseQueryParams() {
     const v = p.get(short);
     if (v && /^\d{4}-\d{2}-\d{2}$/.test(v)) estimatorFilled[key] = v;
   }
-  if (p.get("from")) document.getElementById("filter-from").value = p.get("from");
-  if (p.get("to")) document.getElementById("filter-to").value = p.get("to");
+  if (p.get("from")) setInputDate(document.getElementById("filter-from"), p.get("from"));
+  if (p.get("to")) setInputDate(document.getElementById("filter-to"), p.get("to"));
   if (p.get("sort")) sortField = p.get("sort");
   if (p.get("dir")) sortDir = p.get("dir") === "asc" ? "asc" : "desc";
   if (p.get("missing") === "1") {
@@ -160,21 +160,22 @@ function computeEstimates() {
 
 function applyEstimator() {
   const { estimates, expectations, pinned, currentStep } = computeEstimates();
-  const inputs = document.querySelectorAll("#estimator-card input[type=date]");
+  const inputs = document.querySelectorAll("#estimator-card .date-input");
   for (const inp of inputs) {
     const step = inp.dataset.step;
     let actual;
+    inp.classList.remove("user-filled", "estimated", "early", "late", "pinned");
     if (estimatorFilled[step]) {
-      inp.value = estimatorFilled[step];
+      setInputDate(inp, estimatorFilled[step]);
       actual = estimatorFilled[step];
-      inp.className = "user-filled";
+      inp.classList.add("user-filled");
     } else if (estimates[step]) {
-      inp.value = estimates[step];
+      setInputDate(inp, estimates[step]);
       actual = estimates[step];
-      inp.className = "estimated";
+      inp.classList.add("estimated");
     } else {
-      inp.value = "";
-      inp.className = "estimated";
+      setInputDate(inp, "");
+      inp.classList.add("estimated");
       inp.placeholder = "—";
       continue;
     }
@@ -253,7 +254,7 @@ function initEstimator() {
     });
   });
 
-  document.querySelectorAll("#estimator-card input[type=date]").forEach(inp => {
+  document.querySelectorAll("#estimator-card .date-input").forEach(inp => {
     inp.addEventListener("change", () => {
       const step = inp.dataset.step;
       if (inp.value && /^\d{4}-\d{2}-\d{2}$/.test(inp.value)) {
@@ -296,10 +297,10 @@ function loadSettings() {
       }, 0);
     }
     if (s.from) {
-      setTimeout(() => { document.getElementById("filter-from").value = s.from; }, 0);
+      setTimeout(() => { setInputDate(document.getElementById("filter-from"), s.from); }, 0);
     }
     if (s.to) {
-      setTimeout(() => { document.getElementById("filter-to").value = s.to; }, 0);
+      setTimeout(() => { setInputDate(document.getElementById("filter-to"), s.to); }, 0);
     }
   } catch (e) { console.debug("Failed to load settings:", e.message); }
 }
@@ -780,6 +781,46 @@ function debounce(fn, ms) {
   return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
 }
 
+function setInputDate(inp, value) {
+  inp.value = value || "";
+  if (inp._disp) {
+    inp._disp.textContent = inp.value || (inp.placeholder || "yyyy-mm-dd");
+    inp._disp.classList.toggle("placeholder", !inp.value);
+  }
+}
+
+function initDatePickers() {
+  document.querySelectorAll("input.date-input[type=date]").forEach(inp => {
+    if (inp._disp) return;
+    const wrap = document.createElement("span");
+    wrap.className = "date-picker-wrap";
+    inp.parentNode.insertBefore(wrap, inp);
+    wrap.appendChild(inp);
+
+    const disp = document.createElement("span");
+    disp.className = "date-picker-display";
+    const cs = getComputedStyle(inp);
+    disp.style.padding = `${cs.paddingTop} ${cs.paddingRight} ${cs.paddingBottom} ${cs.paddingLeft}`;
+    disp.style.fontSize = cs.fontSize;
+    disp.textContent = inp.value || (inp.placeholder || "yyyy-mm-dd");
+    disp.classList.toggle("placeholder", !inp.value);
+    wrap.appendChild(disp);
+    inp._disp = disp;
+
+    const sync = () => setInputDate(inp, inp.value);
+    inp.addEventListener("input", sync);
+    inp.addEventListener("change", () => {
+      sync();
+      inp.blur();
+    });
+    inp.addEventListener("click", () => {
+      try {
+        if (typeof inp.showPicker === "function") inp.showPicker();
+      } catch (_) {}
+    });
+  });
+}
+
 function init() {
   const sortEl = document.getElementById("sort-field");
   sortEl.replaceChildren();
@@ -809,8 +850,8 @@ function init() {
 
   document.getElementById("clear-btn").addEventListener("click", () => {
     document.querySelectorAll(".filter-check").forEach(el => el.classList.remove("checked"));
-    document.getElementById("filter-from").value = "";
-    document.getElementById("filter-to").value = "";
+    setInputDate(document.getElementById("filter-from"), "");
+    setInputDate(document.getElementById("filter-to"), "");
     sortField = "application_date";
     sortDir = "desc";
     document.getElementById("sort-dir").textContent = "Newest first";
@@ -857,6 +898,7 @@ function init() {
   });
 
   renderColumnsPopup();
+  initDatePickers();
   initEstimator();
   fetchAll();
 }

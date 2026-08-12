@@ -6,7 +6,7 @@
   <title>Canadian Citizenship Timelines 2026</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link href="https://unpkg.com/tabulator-tables@6.3.0/dist/css/tabulator.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="app.css?v=2">
+  <link rel="stylesheet" href="app.css?v=4">
   <script async src="https://plausible.imranr.dev/js/pa-my1bSzOBjR6KgtPfD6hPC.js"></script>
   <script>
     window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
@@ -27,9 +27,9 @@
         <div class="filter-left">
           <div class="filter-section">
             <span class="filter-label">Application date</span>
-            <input type="date" id="filter-from" placeholder="From">
+            <input type="date" id="filter-from" placeholder="yyyy-mm-dd" class="date-input">
             <span class="filter-range-sep">to</span>
-            <input type="date" id="filter-to" placeholder="To">
+            <input type="date" id="filter-to" placeholder="yyyy-mm-dd" class="date-input">
             <span class="filter-check" data-field="_missing_date">Missing application date</span>
           </div>
 
@@ -73,15 +73,15 @@
         <button class="btn btn-ghost" id="estimator-collapse">▲</button>
       </div>
       <div class="estimator-grid">
-        <div class="estimator-field"><label>Application</label><input type="date" data-step="application_date"></div>
-        <div class="estimator-field"><label>AOR</label><input type="date" data-step="aor_date"></div>
-        <div class="estimator-field"><label>Background</label><input type="date" data-step="background_check_date"></div>
-        <div class="estimator-field"><label>Test Invitation</label><input type="date" data-step="test_invitation_date"></div>
-        <div class="estimator-field"><label>Test Taken</label><input type="date" data-step="test_taken_date"></div>
-        <div class="estimator-field"><label>Test Completed</label><input type="date" data-step="test_completed_date"></div>
-        <div class="estimator-field"><label>LPP</label><input type="date" data-step="lpp_date"></div>
-        <div class="estimator-field"><label>Oath Scheduled</label><input type="date" data-step="oath_scheduled_date"></div>
-        <div class="estimator-field"><label>Oath Ceremony</label><input type="date" data-step="oath_ceremony_date"></div>
+        <div class="estimator-field"><label>Application</label><input type="date" placeholder="yyyy-mm-dd" class="date-input" data-step="application_date"></div>
+        <div class="estimator-field"><label>AOR</label><input type="date" placeholder="yyyy-mm-dd" class="date-input" data-step="aor_date"></div>
+        <div class="estimator-field"><label>Background</label><input type="date" placeholder="yyyy-mm-dd" class="date-input" data-step="background_check_date"></div>
+        <div class="estimator-field"><label>Test Invitation</label><input type="date" placeholder="yyyy-mm-dd" class="date-input" data-step="test_invitation_date"></div>
+        <div class="estimator-field"><label>Test Taken</label><input type="date" placeholder="yyyy-mm-dd" class="date-input" data-step="test_taken_date"></div>
+        <div class="estimator-field"><label>Test Completed</label><input type="date" placeholder="yyyy-mm-dd" class="date-input" data-step="test_completed_date"></div>
+        <div class="estimator-field"><label>LPP</label><input type="date" placeholder="yyyy-mm-dd" class="date-input" data-step="lpp_date"></div>
+        <div class="estimator-field"><label>Oath Scheduled</label><input type="date" placeholder="yyyy-mm-dd" class="date-input" data-step="oath_scheduled_date"></div>
+        <div class="estimator-field"><label>Oath Ceremony</label><input type="date" placeholder="yyyy-mm-dd" class="date-input" data-step="oath_ceremony_date"></div>
       </div>
     </div>
 
@@ -125,6 +125,6 @@
   </div>
 
   <script src="https://unpkg.com/tabulator-tables@6.3.0/dist/js/tabulator.min.js"></script>
-  <script src="app.js?v=2"></script>
+  <script src="app.js?v=4"></script>
 </body>
 </html>
