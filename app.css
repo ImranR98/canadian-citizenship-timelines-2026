@@ -143,8 +143,11 @@ main { padding: 20px 24px; }
 #estimator-collapse { margin-left: auto; padding: 2px 6px; }
 .estimator-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px 16px;
+}
+.estimator-field {
+  min-width: 0;
 }
 .estimator-field label {
   display: block;
@@ -350,5 +353,14 @@ footer a:hover { color: var(--red); }
   .filter-right {
     align-items: flex-start;
     padding-bottom: 0;
+  }
+  .estimator-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 420px) {
+  .estimator-grid {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
   }
 }
