@@ -38,33 +38,6 @@ const ESTIMATOR_KEYS = {
   oc: "oath_ceremony_date"
 };
 
-function upgradeDateInputs() {
-  document.querySelectorAll("input.date-input[type=date]").forEach(inp => {
-    if (inp.parentElement.classList.contains("date-picker-wrap")) return;
-    const wrap = document.createElement("span");
-    wrap.className = "date-picker-wrap";
-    inp.parentNode.insertBefore(wrap, inp);
-    wrap.appendChild(inp);
-    const disp = document.createElement("span");
-    disp.className = "date-picker-display";
-    wrap.appendChild(disp);
-    const sync = () => {
-      disp.textContent = inp.value || (inp.placeholder || "yyyy-mm-dd");
-      disp.classList.toggle("placeholder", !inp.value);
-    };
-    inp.addEventListener("input", sync);
-    inp.addEventListener("change", sync);
-    inp.syncDateDisplay = sync;
-    sync();
-  });
-}
-
-function syncAllDateDisplays() {
-  document.querySelectorAll("input.date-input[type=date]").forEach(inp => {
-    if (inp.syncDateDisplay) inp.syncDateDisplay();
-  });
-}
-
 function parseQueryParams() {
   const p = new URLSearchParams(window.location.search);
   estimatorFilled = {};
@@ -187,7 +160,7 @@ function computeEstimates() {
 
 function applyEstimator() {
   const { estimates, expectations, pinned, currentStep } = computeEstimates();
-  const inputs = document.querySelectorAll("#estimator-card .date-input");
+  const inputs = document.querySelectorAll("#estimator-card input[type=date]");
   for (const inp of inputs) {
     const step = inp.dataset.step;
     let actual;
@@ -222,7 +195,6 @@ function applyEstimator() {
       inp.title = "Estimated from filtered averages";
     }
   }
-  syncAllDateDisplays();
 }
 
 function buildUrl() {
@@ -281,7 +253,7 @@ function initEstimator() {
     });
   });
 
-  document.querySelectorAll("#estimator-card .date-input").forEach(inp => {
+  document.querySelectorAll("#estimator-card input[type=date]").forEach(inp => {
     inp.addEventListener("change", () => {
       const step = inp.dataset.step;
       if (inp.value && /^\d{4}-\d{2}-\d{2}$/.test(inp.value)) {
@@ -478,9 +450,8 @@ async function fetchLastScrape() {
     if (!r.ok) return;
     const { time } = await r.json();
     const d = new Date(time);
-    const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-    const timeStr = `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
-    document.getElementById("last-scrape").textContent = `Last scraped ${dateStr} ${timeStr}`;
+    document.getElementById("last-scrape").textContent =
+      `Last scraped ${d.toLocaleDateString()} ${d.toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}`;
   } catch (e) { console.debug("Failed to load last scrape time:", e.message); }
 }
 
@@ -886,7 +857,6 @@ function init() {
   });
 
   renderColumnsPopup();
-  upgradeDateInputs();
   initEstimator();
   fetchAll();
 }

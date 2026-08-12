@@ -156,68 +156,49 @@ main { padding: 20px 24px; }
   color: var(--text-secondary);
   margin-bottom: 2px;
 }
-.date-picker-wrap {
-  position: relative;
-  display: inline-block;
-}
-.estimator-field .date-picker-wrap { display: block; }
-.date-picker-wrap input[type=date] {
-  position: absolute;
-  inset: 0;
+.estimator-field input {
   width: 100%;
-  height: 100%;
-  opacity: 0;
-  cursor: pointer;
-  border: none;
-  padding: 0;
-  margin: 0;
-  z-index: 2;
-}
-.date-picker-display {
-  display: inline-block;
-  width: 100%;
-  box-sizing: border-box;
   padding: 5px 8px;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   font-size: 0.84rem;
-  background: var(--white);
-  color: var(--text);
-  font-family: "SF Mono", "Fira Code", monospace;
-  white-space: nowrap;
 }
-.date-picker-display.placeholder {
-  color: var(--text-secondary);
-}
-.date-picker-wrap:focus-within .date-picker-display {
-  border-color: var(--red);
-  box-shadow: 0 0 0 3px var(--red-light);
-}
-.date-picker-wrap input.estimated ~ .date-picker-display {
+.estimator-field input.estimated {
   background: #F3F4F6;
   color: var(--text-secondary);
   font-style: italic;
   border-style: dashed;
 }
-.date-picker-wrap input.user-filled ~ .date-picker-display {
+.estimator-field input.user-filled {
   background: var(--white);
   color: var(--text);
   font-style: normal;
 }
-.date-picker-wrap input.early ~ .date-picker-display {
+.estimator-field input:focus {
+  outline: none;
+  border-color: var(--red);
+  box-shadow: 0 0 0 3px var(--red-light);
+}
+.estimator-field input.early {
   background: #ECFDF5;
   border-color: #6EE7B7;
 }
-.date-picker-wrap input.late ~ .date-picker-display {
+.estimator-field input.late {
   background: #FEF2F2;
   border-color: #FCA5A5;
 }
-.date-picker-wrap input.pinned ~ .date-picker-display {
+.estimator-field input.pinned {
   background: #DC2626;
   color: var(--white);
   border-color: #991B1B;
   font-weight: 600;
 }
+
+input[type="date"] {
+  padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+  font-size: 0.84rem; background: var(--white);
+}
+input[type="date"]:focus { outline: none; border-color: var(--red); box-shadow: 0 0 0 3px var(--red-light); }
 
 .filter-check {
   display: flex; align-items: center; gap: 4px; font-size: 0.8rem; cursor: pointer;
